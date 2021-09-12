@@ -1,5 +1,6 @@
-import {ChakraProvider, Text, theme} from "@chakra-ui/react";
+import {ChakraProvider, Text} from "@chakra-ui/react";
 import {ReactElement} from "react";
+import {theme} from "./theme";
 
 export function App(): ReactElement {
     return (

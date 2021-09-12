@@ -49,6 +49,8 @@ importers:
       '@chakra-ui/react': ^1.6.7
       '@emotion/react': ^11.4.1
       '@emotion/styled': ^11.3.0
+      '@fontsource/asap': ^4.5.0
+      '@fontsource/farro': ^4.5.0
       '@types/node': ^14.14.31
       '@types/react': ^17.0.20
       '@types/react-dom': ^17.0.9
@@ -63,6 +65,8 @@ importers:
       '@chakra-ui/react': 1.6.7_5169fdecf8b87f3c70d2eb6f5638b7f6
       '@emotion/react': 11.4.1_6e44cfea672f844fe365824ce49901bd
       '@emotion/styled': 11.3.0_17d2c1c118fdd49ec5ea34ebe26bbb6d
+      '@fontsource/asap': 4.5.0
+      '@fontsource/farro': 4.5.0
       framer-motion: 4.1.17_react-dom@17.0.2+react@17.0.2
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
@@ -2641,6 +2645,14 @@ packages:
       strip-json-comments: 3.1.1
     transitivePeerDependencies:
       - supports-color
+
+  /@fontsource/asap/4.5.0:
+    resolution: {integrity: sha512-nadDbEpOOx73wbgoz/9FAYFD8BLP8g2ilrMo3Ibhb4Mhrhb3SdKtmdze3GR7BMlHARLbQSqgfyH7qBf02r6kPw==}
+    dev: false
+
+  /@fontsource/farro/4.5.0:
+    resolution: {integrity: sha512-in54V9h30ZWsYwKJm5f+XgvS3FlTHtW7Mu+gBx2nKef3YlVI6O6ByizTpxlCgQ/d61FLYFcAA+svD4hyo80+cA==}
+    dev: false
 
   /@gar/promisify/1.1.2:
     resolution: {integrity: sha512-82cpyJyKRoQoRi+14ibCeGPu0CwypgtBAdBhq1WfvagpCZNKqwXbKwXllYSMG91DhmG4jt9gN8eP6lGOtozuaw==}
