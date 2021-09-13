@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="100"
+   height="100"
+   viewBox="0 0 100 100"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   sodipodi:docname="logo-source.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     units="px"
+     viewbox-height="100"
+     inkscape:zoom="8"
+     inkscape:cx="57"
+     inkscape:cy="43.5625"
+     inkscape:window-width="2560"
+     inkscape:window-height="1376"
+     inkscape:window-x="1920"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g5752"
+       transform="matrix(1.1136455,0,0,1.1132338,-14.034277,2.6699105)">
+      <path
+         id="path846"
+         style="fill:#1da1f2;fill-opacity:1;stroke:#003352;stroke-width:3;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="M 47.251857,0 A 32.252568,31.875 0 0 0 15,31.875 32.252568,31.875 0 0 0 32.000001,59.905078 V 85 L 54.096682,62.923242 a 32.252568,31.875 0 0 0 25.169629,-27.72627 c 1.48886,-1.081464 2.949405,-2.151481 4.298145,-3.159277 C 92.296935,25.512675 100,12.557421 100,12.557422 c 0,0 -6.456754,6.588699 -21.860935,8.797168 -0.06849,0.0098 -0.131238,0.02313 -0.199218,0.0332 8.985198,-8.133583 18.099025,-20.79511618 18.099025,-20.79511618 0,0 -11.769255,6.35395028 -25.041799,9.71689418 A 32.252568,31.875 0 0 0 47.251857,0 Z" />
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:#003352;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         id="rect1413"
+         width="6.8000002"
+         height="21.25"
+         x="47.300003"
+         y="12.75"
+         ry="3.3999999" />
+      <rect
+         style="fill:#ffffff;fill-opacity:1;stroke:#003352;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+         id="rect1413-7"
+         width="6.8000002"
+         height="21.25"
+         x="57.500004"
+         y="12.75"
+         ry="3.3999999" />
+    </g>
+  </g>
+</svg>
