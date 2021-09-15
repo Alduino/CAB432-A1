@@ -148,5 +148,8 @@ createAuthRouter<UserState, TokenResponse>(router, "twitter", {
         } catch {
             return {isLoggedIn: false};
         }
+    },
+    logout(req, res) {
+        res.clearCookie("Twitter-Session");
     }
 });

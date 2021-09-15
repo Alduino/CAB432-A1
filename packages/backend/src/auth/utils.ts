@@ -62,6 +62,13 @@ export interface AuthRouterOpts<T, R> {
      * @param req The HTTP request
      */
     check?(userState: T, req: Request): boolean | Promise<AuthCheckResponse>;
+
+    /**
+     * Log the user out. Do nothing if they aren't logged in.
+     * @param req Http request
+     * @param res Http response
+     */
+    logout?(req: Request, res: Response): void;
 }
 
 interface WrappedRequestInfo {
@@ -354,14 +361,14 @@ export async function createAuthRouter<T, R = never>(
     });
 
     router.get("/check", async (req, res) => {
-        const result = await opts.check?.(userState, req) ?? {isLoggedIn: false};
+        const result = (await opts.check?.(userState, req)) ?? {
+            isLoggedIn: false
+        };
         res.json(result);
     });
-}
 
-export const nodeFetchRequestor: Requestor = {
-    xhr<T>(settings: JQueryAjaxSettings): Promise<T> {
-        if (!settings.url) throw new Error("No url specified");
-        return fetch(settings.url).then(res => res.json());
-    }
-};
+    router.post("/logout", (req, res) => {
+        opts.logout?.(req, res);
+        res.status(200).json({});
+    });
+}

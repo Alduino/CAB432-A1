@@ -6,21 +6,23 @@ import LoadingPage from "./routes/LoadingPage";
 import {theme} from "./theme";
 
 const LoginPage = lazy(() => import("./routes/LoginPage"));
+const LogoutPage = lazy(() => import("./routes/LogoutPage"));
 const NotFoundPage = lazy(() => import("./routes/NotFoundPage"));
 
 export function App(): ReactElement {
     return (
         <ChakraProvider theme={theme} resetCSS>
-            <Layout>
-                <Suspense fallback={<LoadingPage />}>
-                    <BrowserRouter>
+            <BrowserRouter>
+                <Layout>
+                    <Suspense fallback={<LoadingPage />}>
                         <Switch>
+                            <Route path="/logout" component={LogoutPage} />
                             <Route exact path="/" component={LoginPage} />
                             <Route component={NotFoundPage} />
                         </Switch>
-                    </BrowserRouter>
-                </Suspense>
-            </Layout>
+                    </Suspense>
+                </Layout>
+            </BrowserRouter>
         </ChakraProvider>
     );
 }
