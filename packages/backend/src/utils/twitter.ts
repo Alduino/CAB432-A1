@@ -1,6 +1,6 @@
-import {createHmac, sign} from "crypto";
-import {URL} from "url";
+import {createHmac} from "crypto";
 import {TwitterApi} from "twitter-api-v2";
+import {twitterConsumerKey, twitterConsumerSecret} from "../config";
 import SessionStore from "./SessionStore";
 
 const percentEncodeDisabled = new Set(["-", ".", "_", "~"]);
@@ -61,3 +61,8 @@ export function generateSignature(
 
 const ONE_HOUR = 1000 * 60 * 60;
 export const twitterSessions = new SessionStore<TwitterApi>(24 * ONE_HOUR);
+
+export const defaultTwitterSession = new TwitterApi({
+    appKey: twitterConsumerKey,
+    appSecret: twitterConsumerSecret
+});
