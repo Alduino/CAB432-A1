@@ -6,8 +6,10 @@ import {
 import {Button, Heading, Link, Text, useToast, VStack} from "@chakra-ui/react";
 import {TwitterLogo} from "phosphor-react";
 import {ReactElement, useEffect} from "react";
-import {useAsync, useAsyncCallback} from "react-async-hook";
-import {Link as RouterLink, useHistory, useLocation} from "react-router-dom";
+import {useAsyncCallback} from "react-async-hook";
+import {Link as RouterLink, useHistory} from "react-router-dom";
+import useSWR from "swr";
+import fetchJson from "../utils/fetchJson";
 import createPromiseDispatch from "../utils/promise-dispatch";
 import {requireOkResponse} from "../utils/require-response";
 
@@ -77,14 +79,6 @@ function doTwitterLogin() {
     return openLoginPopup("twitter");
 }
 
-async function checkLoggedIn(target: string) {
-    const res: AuthCheckResponse = await fetch(`/api/auth/${target}/check`)
-        .then(requireOkResponse)
-        .then(res => res.json());
-
-    return res;
-}
-
 export default function LoginPage(): ReactElement {
     const {push: pushHistory} = useHistory();
 
@@ -95,8 +89,10 @@ export default function LoginPage(): ReactElement {
         execute: handleTwitterLogin
     } = useAsyncCallback(doTwitterLogin);
 
-    const {result: twitterInitiallyLoggedIn, loading: twitterInitialLoading} =
-        useAsync(checkLoggedIn, ["twitter"]);
+    const {
+        data: twitterInitial,
+        isValidating: twitterInitialLoading
+    } = useSWR<AuthCheckResponse>("/api/auth/twitter/check", fetchJson);
 
     const createToast = useToast();
 
@@ -112,9 +108,8 @@ export default function LoginPage(): ReactElement {
     }, [twitterError]);
 
     const isTwitterLoggedIn =
-        twitterLoggedIn || twitterInitiallyLoggedIn?.isLoggedIn;
-    const twitterLabel =
-        `@${twitterInitiallyLoggedIn?.identifier}` ?? "Log in to Twitter";
+        twitterLoggedIn || twitterInitial?.isLoggedIn;
+    const twitterLabel = twitterInitial?.isLoggedIn ? `@${twitterInitial.identifier}` : "Log in to Twitter";
 
     useEffect(() => {
         if (!isTwitterLoggedIn) return;
@@ -132,7 +127,7 @@ export default function LoginPage(): ReactElement {
                 colorScheme="twitter"
                 isDisabled={isTwitterLoggedIn}
                 isLoading={twitterLoading || twitterInitialLoading}
-                rightIcon={<TwitterLogo />}
+                leftIcon={<TwitterLogo />}
                 onClick={handleTwitterLogin}
             >
                 {twitterLabel}
