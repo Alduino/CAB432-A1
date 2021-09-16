@@ -95,7 +95,9 @@ export default function HomePage(): ReactElement {
                     <UserDisplay key={item.id} account={item} />
                 ))}
             <Text size="sm" color="blackAlpha.500">
-                That&lsquo;s all
+                {data.data.length > 0
+                    ? "That's all"
+                    : "We couldn't find any Twitch accounts for the people you follow"}
             </Text>
         </VStack>
     );
