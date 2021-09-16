@@ -1,8 +1,9 @@
-import {TopAccount} from "@cab432-a1/common";
+import {isResponseError, TopAccount} from "@cab432-a1/common";
 import {
     AspectRatio,
     Box,
-    Center, chakra,
+    Center,
+    chakra,
     Heading,
     HStack,
     Icon,
@@ -76,7 +77,13 @@ export default function AccountPage(): ReactElement {
     );
 
     if (error) {
-        return <Text>Something went wrong. Try refreshing the page.</Text>;
+        return (
+            <Text p={4}>
+                {isResponseError(error) && error.response.status === 404
+                    ? "That user does't exist, or we couldn't find their Twitch account"
+                    : "Something went wrong. Try refreshing the page."}
+            </Text>
+        );
     } else if (!data) {
         return (
             <Center h="full">
@@ -87,7 +94,12 @@ export default function AccountPage(): ReactElement {
 
     return (
         <Stack spacing={4}>
-            <HStack spacing={4} p={4} borderBottom="1px solid" borderColor="gray.200">
+            <HStack
+                spacing={4}
+                p={4}
+                borderBottom="1px solid"
+                borderColor="gray.200"
+            >
                 <Image src={data.profilePictureUrl} h={12} borderRadius="md" />
                 <Stack spacing={0}>
                     <HStack>

@@ -6,14 +6,27 @@ interface Response {
     text(): Promise<string>;
 }
 
+export interface ResponseError extends Error {
+    response: Response;
+}
+
+export function isResponseError(err: Error): err is ResponseError {
+    if (!err) return false;
+    return typeof (err as ResponseError).response === "object";
+}
+
 async function getResponseError(res: Response): Promise<Error> {
     const response = await res.text();
 
     try {
         const json = JSON.parse(response);
-        return new Error(`${res.statusText}: ${json.message ?? json.error}\nRaw response: ${response}`);
+        const err = new Error(`${res.statusText}: ${json.message ?? json.error}\nRaw response: ${response}`) as ResponseError;
+        err.response = res;
+        return err;
     } catch {
-        return new Error(`${res.status}: ${res.statusText}\nRaw response: ${response}`);
+        const err = new Error(`${res.status}: ${res.statusText}\nRaw response: ${response}`) as ResponseError;
+        err.response = res;
+        return err;
     }
 }
 
