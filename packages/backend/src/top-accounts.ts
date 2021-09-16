@@ -142,7 +142,7 @@ async function getTwitterTopAccounts(
     return twitterAccounts;
 }
 
-const twitchLinkRegex = /https:\/\/(?:www\.)?twitch\.tv\/([a-zA-Z0-9_-]+)/;
+const twitchLinkRegex = /https:\/\/(?:www\.)?twitch\.tv\/([a-z0-9_-]+)/i;
 
 // TODO: Check if the username is a Twitch account
 function getTwitchUsername(description: string): string | undefined {
