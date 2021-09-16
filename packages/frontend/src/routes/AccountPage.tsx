@@ -40,30 +40,33 @@ function LiveView({account}: ViewProps): ReactElement | null {
 }
 
 function OfflineView({account}: ViewProps): ReactElement {
+    // we need to split the image div into two, as Chakra's `Stack` disables any
+    // margin we set on direct children
     return (
-        <Box
-            w="full"
-            h="3xs"
-            p={4}
-            backgroundImage={account.notLiveCoverUrl}
-            backgroundSize="cover"
-            backgroundPosition="center center"
-            position="relative"
-            borderRadius="md"
-            overflow="hidden"
-        >
+        <Box px={4}>
             <Box
-                position="absolute"
-                left={0}
-                right={0}
-                bottom={0}
-                height="auto"
-                bg="blackAlpha.800"
-                p={2}
+                w="full"
+                h="3xs"
+                backgroundImage={account.notLiveCoverUrl}
+                backgroundSize="cover"
+                backgroundPosition="center center"
+                position="relative"
+                borderRadius="md"
+                overflow="hidden"
             >
-                <Text color="white" align="center">
-                    Sorry, {account.displayName} isn&lsquo;t live right now.
-                </Text>
+                <Box
+                    position="absolute"
+                    left={0}
+                    right={0}
+                    bottom={0}
+                    height="auto"
+                    bg="blackAlpha.800"
+                    p={2}
+                >
+                    <Text color="white" align="center">
+                        Sorry, {account.displayName} isn&lsquo;t live right now.
+                    </Text>
+                </Box>
             </Box>
         </Box>
     );
