@@ -1,24 +1,18 @@
 import {randomUUID} from "crypto";
-
-interface SessionStoreItem<T> {
-    timeoutTime: number;
-    value: T;
-}
+import TimeoutCache from "./TimeoutCache";
 
 /**
  * A store with a per-item timeout
  */
 export default class SessionStore<T> {
-    private readonly timeoutCheck = setInterval(
-        () => this.checkForTimeout(),
-        this.timeout
-    );
-    private readonly store = new Map<string, SessionStoreItem<T>>();
+    private readonly store;
 
-    constructor(private readonly timeout: number) {}
+    constructor(timeout: number) {
+        this.store = new TimeoutCache<string, T>(timeout);
+    }
 
-    dispose() {
-        clearInterval(this.timeoutCheck);
+    dispose(): void {
+        this.store.dispose();
     }
 
     /**
@@ -28,10 +22,7 @@ export default class SessionStore<T> {
      */
     create(value: T): string {
         const key = randomUUID();
-        this.store.set(key, {
-            timeoutTime: Date.now() + this.timeout,
-            value
-        });
+        this.store.set(key, value);
         return key;
     }
 
@@ -42,17 +33,8 @@ export default class SessionStore<T> {
      * @param restartTimeout Reset the timeout
      * @returns false if the key didn't exist, true if the value was changed
      */
-    update(key: string, value: T, restartTimeout = false) {
-        const item = this.store.get(key);
-        if (!item) return false;
-
-        if (restartTimeout) {
-            item.timeoutTime = Date.now() + this.timeout;
-        }
-
-        item.value = value;
-
-        return true;
+    update(key: string, value: T, restartTimeout = false): boolean {
+        return this.store.update(key, value, restartTimeout);
     }
 
     /**
@@ -60,19 +42,6 @@ export default class SessionStore<T> {
      * @param key The session key
      */
     get(key: string): T | undefined {
-        return this.store.get(key)?.value;
-    }
-
-    private checkForTimeout() {
-        const timedOutKeys = new Set<string>();
-        const now = Date.now();
-
-        for (const [k, {timeoutTime}] of this.store) {
-            if (timeoutTime < now) timedOutKeys.add(k);
-        }
-
-        for (const k of timedOutKeys) {
-            this.store.delete(k);
-        }
+        return this.store.get(key);
     }
 }
