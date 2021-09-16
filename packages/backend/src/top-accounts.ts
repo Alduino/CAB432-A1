@@ -45,6 +45,9 @@ function getRedirect(link: string): Promise<string> {
     if (cache) return Promise.resolve(cache);
 
     return getRedirectMutex.runExclusive(async () => {
+        const cache = redirectCache.get(link);
+        if (cache) return Promise.resolve(cache);
+
         try {
             const response = await fetch(link, {timeout: 500});
             debug("Finished checking redirect of %s (%s)", link, response.url);
