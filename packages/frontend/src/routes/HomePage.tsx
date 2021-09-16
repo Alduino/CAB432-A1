@@ -89,7 +89,7 @@ export default function HomePage(): ReactElement {
     }
 
     return (
-        <VStack spacing={4}>
+        <VStack spacing={4} p={4} height="100%" overflowY="auto">
             {data &&
                 data.data.map(item => (
                     <UserDisplay key={item.id} account={item} />

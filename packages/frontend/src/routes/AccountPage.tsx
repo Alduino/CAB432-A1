@@ -2,7 +2,7 @@ import {TopAccount} from "@cab432-a1/common";
 import {
     AspectRatio,
     Box,
-    Center,
+    Center, chakra,
     Heading,
     HStack,
     Icon,
@@ -24,13 +24,17 @@ interface ViewProps {
     account: TopAccount;
 }
 
+const IFrame = chakra("iframe");
+
 function LiveView({account}: ViewProps): ReactElement | null {
     const src = `https://player.twitch.tv/?channel=${account.twitchLogin}&parent=${location.hostname}&muted=true`;
 
     return (
-        <AspectRatio ratio={16 / 9} borderRadius="md" overflow="hidden">
-            <iframe allowFullScreen src={src} />
-        </AspectRatio>
+        <Box px={4}>
+            <AspectRatio ratio={16 / 9} borderRadius="md" overflow="hidden">
+                <IFrame allowFullScreen src={src} />
+            </AspectRatio>
+        </Box>
     );
 }
 
@@ -39,6 +43,7 @@ function OfflineView({account}: ViewProps): ReactElement {
         <Box
             w="full"
             h="3xs"
+            p={4}
             backgroundImage={account.notLiveCoverUrl}
             backgroundSize="cover"
             backgroundPosition="center center"
@@ -81,8 +86,8 @@ export default function AccountPage(): ReactElement {
     }
 
     return (
-        <Stack spacing={8}>
-            <HStack spacing={4}>
+        <Stack spacing={4}>
+            <HStack spacing={4} p={4} borderBottom="1px solid" borderColor="gray.200">
                 <Image src={data.profilePictureUrl} h={12} borderRadius="md" />
                 <Stack spacing={0}>
                     <HStack>

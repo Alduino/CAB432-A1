@@ -33,9 +33,8 @@ export function Layout(props: FlexProps): ReactElement {
                     w="md"
                     h="xl"
                     bg="gray.50"
-                    p={4}
                     borderRadius="lg"
-                    overflowY="auto"
+                    overflow="hidden"
                     boxShadow="md"
                     color="gray.900"
                     {...props}

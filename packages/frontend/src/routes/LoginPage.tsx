@@ -117,7 +117,7 @@ export default function LoginPage(): ReactElement {
     }, [isTwitterLoggedIn, pushHistory]);
 
     return (
-        <VStack spacing={4}>
+        <VStack spacing={4} p={4}>
             <Heading size="md">Log in</Heading>
             <Text>
                 Log in to your Twitter account for personalised results.
