@@ -30,6 +30,7 @@ export function Layout(props: FlexProps): ReactElement {
                     bg="gray.50"
                     p={4}
                     borderRadius="lg"
+                    overflowY="auto"
                     {...props}
                 />
                 <Text>

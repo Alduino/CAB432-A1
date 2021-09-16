@@ -7,6 +7,7 @@ import {theme} from "./theme";
 
 const LoginPage = lazy(() => import("./routes/LoginPage"));
 const LogoutPage = lazy(() => import("./routes/LogoutPage"));
+const HomePage = lazy(() => import("./routes/HomePage"));
 const NotFoundPage = lazy(() => import("./routes/NotFoundPage"));
 
 export function App(): ReactElement {
@@ -17,6 +18,7 @@ export function App(): ReactElement {
                     <Suspense fallback={<LoadingPage />}>
                         <Switch>
                             <Route path="/logout" component={LogoutPage} />
+                            <Route path="/home" component={HomePage} />
                             <Route exact path="/" component={LoginPage} />
                             <Route component={NotFoundPage} />
                         </Switch>

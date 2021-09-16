@@ -132,13 +132,13 @@ async function getTopAccounts(
         return {
             id: user.id,
             twitterId: user.id,
-            twitterName: user.name,
-            twitterUsername: user.username,
+            twitterLogin: user.username,
             twitterVerified: user.verified,
             twitchId: twitchAccount.id,
             twitchLogin: twitchAccount.login,
-            twitchName: twitchAccount.displayName,
             isLiveOnTwitch: streams[twitchName]?.length > 0,
+            profilePictureUrl: twitchAccount.profileImageUrl,
+            displayName: twitchAccount.displayName,
             description: user.description
         };
     });
