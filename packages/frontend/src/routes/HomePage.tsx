@@ -14,25 +14,10 @@ import {CaretRight} from "phosphor-react";
 import {ReactElement} from "react";
 import {Link} from "react-router-dom";
 import useSWR from "swr";
+import {AccountName} from "../components/AccountName";
+import {LiveIcon} from "../components/LiveIcon";
 import {MessageSpinner} from "../components/MessageSpinner";
 import fetchJson from "../utils/fetchJson";
-
-function LiveIcon(): ReactElement {
-    return (
-        <Text
-            px={1}
-            py={0.5}
-            lineHeight={1}
-            bg="red.500"
-            color="white"
-            borderRadius="sm"
-            fontSize="sm"
-            fontWeight="bold"
-        >
-            LIVE
-        </Text>
-    );
-}
 
 interface UserDisplayProps {
     account: TopAccount;
@@ -53,8 +38,11 @@ function UserDisplay({account}: UserDisplayProps): ReactElement {
             _hover={{bg: "gray.300"}}
         >
             <Image src={account.profilePictureUrl} h={6} borderRadius="full" />
-            <Text>{account.displayName}</Text>
-            {account.isLiveOnTwitch && <LiveIcon />}
+            <AccountName
+                displayName={account.displayName}
+                verified={account.twitterVerified}
+            />
+            {account.twitchStreamId && <LiveIcon />}
             <Box flexGrow={1} />
             <LinkOverlay as={Link} to={link}>
                 <Icon as={CaretRight} />

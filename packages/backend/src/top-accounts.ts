@@ -67,6 +67,41 @@ async function loadRedirectingLinks(description: string): Promise<string> {
     );
 }
 
+const topAccountUsersCache = new TimeoutCache<string, TwitterTopAccount>(
+    "top-account-users",
+    ONE_HOUR * 4
+);
+
+async function getTwitterTopAccount(
+    id: string,
+    twSession?: string
+): Promise<TwitterTopAccount | undefined> {
+    const cacheItem = topAccountUsersCache.get(id);
+    if (cacheItem) return cacheItem;
+
+    const twitterSession = twSession
+        ? twitterSessions.get(twSession)
+        : undefined;
+
+    const api = twitterSession ?? (await defaultTwitterSession.appLogin());
+    const {data: account} = await api.v2.user(id, {
+        "user.fields": ["verified", "description"]
+    });
+
+    if (!account) return undefined;
+
+    const twitterTopAccount: TwitterTopAccount = {
+        id: account.id,
+        name: account.name,
+        username: account.username,
+        verified: account.verified ?? false,
+        description: await loadRedirectingLinks(account.description ?? "")
+    };
+
+    topAccountUsersCache.set(id, twitterTopAccount);
+    return twitterTopAccount;
+}
+
 const topAccountsCache = new TimeoutCache<
     string | undefined,
     TwitterTopAccount[]
@@ -150,7 +185,7 @@ async function getTopAccounts(
             twitterVerified: user.verified,
             twitchId: twitchAccount.id,
             twitchLogin: twitchAccount.login,
-            isLiveOnTwitch: streams[twitchName]?.length > 0,
+            twitchStreamId: streams[twitchName]?.[0]?.id,
             profilePictureUrl: twitchAccount.profileImageUrl,
             displayName: twitchAccount.displayName,
             description: user.description
@@ -159,11 +194,13 @@ async function getTopAccounts(
 }
 
 function sortTopAccounts(a: TopAccount, b: TopAccount) {
-    const byLive = Number(b.isLiveOnTwitch) - Number(a.isLiveOnTwitch);
+    const byLive =
+        (b.twitchStreamId ? 1 : 0) - Number(a.twitchStreamId ? 1 : 0);
     if (byLive) return byLive;
     return a.displayName.localeCompare(b.displayName);
 }
 
+// /api/top-accounts
 export default async function handleTopAccounts(
     req: Request,
     res: Response
@@ -177,6 +214,36 @@ export default async function handleTopAccounts(
         topAccounts.sort(sortTopAccounts);
 
         res.json({data: topAccounts});
+    } catch (err) {
+        console.error(err);
+        writeError(res, "Something went wrong", 500);
+    }
+}
+
+// /api/top-accounts/:id
+export async function handleTopAccount(
+    req: Request,
+    res: Response
+): Promise<void> {
+    try {
+        const {id} = req.params;
+
+        const session = req.cookies["Twitter-Session"];
+        const topTwitterAccount = await getTwitterTopAccount(id, session);
+
+        if (!topTwitterAccount) {
+            writeError(res, "Not found", 404);
+            return;
+        }
+
+        const [topAccount] = await getTopAccounts([topTwitterAccount]);
+
+        if (!topAccount) {
+            writeError(res, "Not found", 404);
+            return;
+        }
+
+        res.json(topAccount);
     } catch (err) {
         console.error(err);
         writeError(res, "Something went wrong", 500);

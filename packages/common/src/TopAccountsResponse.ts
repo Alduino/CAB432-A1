@@ -6,7 +6,7 @@ export interface TopAccount {
     twitterVerified: boolean;
     twitchId: string;
     twitchLogin: string;
-    isLiveOnTwitch: boolean;
+    twitchStreamId?: string;
     profilePictureUrl: string;
     displayName: string;
     description: string;

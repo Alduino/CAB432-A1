@@ -8,6 +8,7 @@ import {theme} from "./theme";
 const LoginPage = lazy(() => import("./routes/LoginPage"));
 const LogoutPage = lazy(() => import("./routes/LogoutPage"));
 const HomePage = lazy(() => import("./routes/HomePage"));
+const AccountPage = lazy(() => import("./routes/AccountPage"));
 const NotFoundPage = lazy(() => import("./routes/NotFoundPage"));
 
 export function App(): ReactElement {
@@ -19,6 +20,7 @@ export function App(): ReactElement {
                         <Switch>
                             <Route path="/logout" component={LogoutPage} />
                             <Route path="/home" component={HomePage} />
+                            <Route path="/account/:id" component={AccountPage} />
                             <Route exact path="/" component={LoginPage} />
                             <Route component={NotFoundPage} />
                         </Switch>
