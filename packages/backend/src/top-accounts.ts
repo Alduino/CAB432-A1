@@ -1,3 +1,4 @@
+import {TopAccount} from "@cab432-a1/common";
 import {Semaphore} from "async-mutex";
 import debugBuilder from "debug";
 import {Request, Response} from "express";
@@ -18,12 +19,6 @@ interface TwitterTopAccount {
     username: string;
     description: string;
     verified: boolean;
-}
-
-interface TopAccount extends TwitterTopAccount {
-    twitchId: string;
-    twitchName: string;
-    isLive: boolean;
 }
 
 async function getUserIdToCheck(session?: TwitterApi) {
@@ -131,10 +126,16 @@ async function getTopAccounts(
         const twitchAccount = accounts[twitchName];
 
         return {
-            ...user,
+            id: user.id,
+            twitterId: user.id,
+            twitterName: user.name,
+            twitterUsername: user.username,
+            twitterVerified: user.verified,
             twitchId: twitchAccount.id,
+            twitchLogin: twitchAccount.login,
             twitchName: twitchAccount.displayName,
-            isLive: streams[twitchName]?.length > 0
+            isLiveOnTwitch: streams[twitchName]?.length > 0,
+            description: user.description
         };
     });
 }
@@ -147,7 +148,7 @@ export default async function handleTopAccounts(
         const session = req.cookies["Twitter-Session"];
         const topTwitterAccounts = await getTwitterTopAccounts(session);
         const topAccounts = await getTopAccounts(topTwitterAccounts);
-        res.json(topAccounts);
+        res.json({data: topAccounts});
     } catch (err) {
         console.error(err);
         writeError(res, "Something went wrong", 500);
