@@ -35,7 +35,7 @@ async function getUserIdToCheck(session?: TwitterApi) {
 
 const ONE_HOUR = 1000 * 60 * 60;
 const getRedirectMutex = new Semaphore(20);
-const redirectCache = new TimeoutCache<string, string>(6 * ONE_HOUR);
+const redirectCache = new TimeoutCache<string, string>("twitter-redirect", 6 * ONE_HOUR);
 function getRedirect(link: string): Promise<string> {
     const cache = redirectCache.get(link);
     if (cache) return Promise.resolve(cache);
@@ -59,7 +59,7 @@ async function loadRedirectingLinks(description: string): Promise<string> {
     );
 }
 
-const topAccountsCache = new TimeoutCache<string | undefined, TwitterTopAccount[]>(ONE_HOUR);
+const topAccountsCache = new TimeoutCache<string | undefined, TwitterTopAccount[]>("top-accounts", ONE_HOUR);
 async function getTwitterTopAccounts(
     twSession?: string
 ): Promise<TwitterTopAccount[]> {

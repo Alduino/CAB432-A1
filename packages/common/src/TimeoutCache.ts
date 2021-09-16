@@ -1,3 +1,5 @@
+import createDebug, {Debugger} from "debug";
+
 interface TimeoutCacheItem<T> {
     timeoutTime: number;
     value: T;
@@ -12,8 +14,11 @@ export default class TimeoutCache<K, V> {
         this.timeout
     );
     private readonly store = new Map<K, TimeoutCacheItem<V>>();
+    private readonly debug: Debugger;
 
-    constructor(private readonly timeout: number) {}
+    constructor(identifier: string, private readonly timeout: number) {
+        this.debug = createDebug(`common:timeout-cache:${identifier}`);
+    }
 
     dispose(): void {
         clearInterval(this.timeoutCheck);
@@ -24,6 +29,7 @@ export default class TimeoutCache<K, V> {
      * deleted after the time specified in `timeout` in the constructor.
      */
     set(key: K, value: V): void {
+        this.debug("Adding %s", key);
         this.store.set(key, {
             timeoutTime: Date.now() + this.timeout,
             value
@@ -67,6 +73,10 @@ export default class TimeoutCache<K, V> {
 
         for (const k of timedOutKeys) {
             this.store.delete(k);
+        }
+
+        if (timedOutKeys.size > 0) {
+            this.debug("Cleared %s items", timedOutKeys.size);
         }
     }
 }

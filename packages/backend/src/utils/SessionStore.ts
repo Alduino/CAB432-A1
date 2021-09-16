@@ -8,7 +8,7 @@ export default class SessionStore<T> {
     private readonly store;
 
     constructor(timeout: number) {
-        this.store = new TimeoutCache<string, T>(timeout);
+        this.store = new TimeoutCache<string, T>("session-store", timeout);
     }
 
     dispose(): void {
