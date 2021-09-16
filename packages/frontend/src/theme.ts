@@ -9,6 +9,9 @@ export const theme = extendTheme(
         components: ["Link"]
     }),
     {
+        config: {
+            useSystemColorMode: true
+        },
         fonts: {
             heading: "Farro, sans-serif",
             body: "AsapVariable, sans-serif"

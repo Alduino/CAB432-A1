@@ -5,23 +5,28 @@ import {
     FlexProps,
     Image,
     Link,
-    Text,
+    Text, useColorModeValue,
     VStack
 } from "@chakra-ui/react";
 import {ReactElement} from "react";
 import {Link as RouterLink} from "react-router-dom";
 import useSWR from "swr";
-import logo from "../assets/logo-wide-white.svg";
+import logoBlack from "../assets/logo-wide-black.svg";
+import logoWhite from "../assets/logo-wide-white.svg";
 import fetchJson from "../utils/fetchJson";
 
 export function Layout(props: FlexProps): ReactElement {
+    const logo = useColorModeValue(logoBlack, logoWhite);
+    const bg = useColorModeValue("gray.100", "gray.900");
+    const loginScheme = useColorModeValue("blackAlpha", "whiteAlpha");
+
     const {data} = useSWR<AuthCheckResponse>(
         "/api/auth/twitter/check",
         fetchJson
     );
 
     return (
-        <Center bg="gray.900" w="full" h="100vh">
+        <Center bg={bg} w="full" h="100vh">
             <VStack spacing={4}>
                 <Image src={logo} />
                 <Box
@@ -31,15 +36,17 @@ export function Layout(props: FlexProps): ReactElement {
                     p={4}
                     borderRadius="lg"
                     overflowY="auto"
+                    boxShadow="md"
+                    color="gray.900"
                     {...props}
                 />
                 <Text>
                     {data?.isLoggedIn ? (
-                        <Link as={RouterLink} to="/logout" colorScheme="whiteAlpha">
+                        <Link as={RouterLink} to="/logout" colorScheme={loginScheme}>
                             Log out of @{data.identifier}
                         </Link>
                     ) : (
-                        <Link as={RouterLink} to="/" colorScheme="whiteAlpha">
+                        <Link as={RouterLink} to="/" colorScheme={loginScheme}>
                             Log in
                         </Link>
                     )}
