@@ -1,4 +1,4 @@
-import {requireOkResponse} from "./require-response";
+import {requireOkResponse} from "@cab432-a1/common";
 
 export default function fetchJson<T>(url: string): Promise<T> {
     return fetch(url)

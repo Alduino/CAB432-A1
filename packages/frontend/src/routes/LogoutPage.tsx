@@ -1,8 +1,8 @@
+import {requireOkResponse} from "@cab432-a1/common";
 import {Center, Link, Spinner, Text} from "@chakra-ui/react";
 import {ReactElement} from "react";
 import {useAsync} from "react-async-hook";
 import {Link as RouterLink, Redirect} from "react-router-dom";
-import {requireOkResponse} from "../utils/require-response";
 
 async function logout() {
     await fetch("/api/auth/twitter/logout", {method: "POST"}).then(

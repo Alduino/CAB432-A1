@@ -1,7 +1,8 @@
 import {
     AuthCheckResponse,
     AuthLinkResponse,
-    AuthPollResponse
+    AuthPollResponse,
+    requireOkResponse
 } from "@cab432-a1/common";
 import {Button, Heading, Link, Text, useToast, VStack} from "@chakra-ui/react";
 import {TwitterLogo} from "phosphor-react";
@@ -11,7 +12,6 @@ import {Link as RouterLink, useHistory} from "react-router-dom";
 import useSWR from "swr";
 import fetchJson from "../utils/fetchJson";
 import createPromiseDispatch from "../utils/promise-dispatch";
-import {requireOkResponse} from "../utils/require-response";
 
 function openCentredWindow(url: string, width: number, height: number) {
     const left = Math.floor((screen.width - width) / 2);
