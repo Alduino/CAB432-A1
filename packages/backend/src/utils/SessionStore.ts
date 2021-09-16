@@ -1,5 +1,5 @@
 import {randomUUID} from "crypto";
-import TimeoutCache from "./TimeoutCache";
+import {TimeoutCache} from "@cab432-a1/common";
 
 /**
  * A store with a per-item timeout

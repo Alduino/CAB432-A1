@@ -1,11 +1,10 @@
-import {TopAccount} from "@cab432-a1/common";
+import {TimeoutCache, TopAccount} from "@cab432-a1/common";
 import {Semaphore} from "async-mutex";
 import debugBuilder from "debug";
 import {Request, Response} from "express";
 import fetch from "node-fetch";
 import {TwitterApi} from "twitter-api-v2";
 import {twitterBaseUserId} from "./config";
-import TimeoutCache from "./utils/TimeoutCache";
 import replaceAsync from "./utils/replaceAsync";
 import {twitchApi} from "./utils/twitch";
 import {defaultTwitterSession, twitterSessions} from "./utils/twitter";
