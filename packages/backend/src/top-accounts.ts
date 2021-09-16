@@ -101,7 +101,6 @@ const twitchLinkRegex = /https:\/\/(?:www\.)?twitch\.tv\/([a-zA-Z0-9_-]+)/;
 function getTwitchUsername(description: string): string | undefined {
     const match = description.match(twitchLinkRegex);
     if (!match) return;
-    debug("Got match for Twitch link: %s", match[1]);
     return match[1].toLowerCase();
 }
 
