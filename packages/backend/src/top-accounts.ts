@@ -35,7 +35,11 @@ async function getUserIdToCheck(session?: TwitterApi) {
 
 const ONE_HOUR = 1000 * 60 * 60;
 const getRedirectMutex = new Semaphore(20);
-const redirectCache = new TimeoutCache<string, string>("twitter-redirect", 6 * ONE_HOUR);
+const redirectCache = new TimeoutCache<string, string>(
+    "twitter-redirect",
+    6 * ONE_HOUR
+);
+
 function getRedirect(link: string): Promise<string> {
     const cache = redirectCache.get(link);
     if (cache) return Promise.resolve(cache);
@@ -53,13 +57,18 @@ function getRedirect(link: string): Promise<string> {
 }
 
 const twitterLinkRegex = /https:\/\/t\.co\/[a-zA-Z0-9]+/g;
+
 async function loadRedirectingLinks(description: string): Promise<string> {
     return await replaceAsync(description, twitterLinkRegex, match =>
         getRedirect(match)
     );
 }
 
-const topAccountsCache = new TimeoutCache<string | undefined, TwitterTopAccount[]>("top-accounts", ONE_HOUR);
+const topAccountsCache = new TimeoutCache<
+    string | undefined,
+    TwitterTopAccount[]
+>("top-accounts", ONE_HOUR);
+
 async function getTwitterTopAccounts(
     twSession?: string
 ): Promise<TwitterTopAccount[]> {
@@ -104,7 +113,9 @@ function getTwitchUsername(description: string): string | undefined {
     return match[1].toLowerCase();
 }
 
-function getTwitchUsernames(accounts: TwitterTopAccount[]): Record<string, TwitterTopAccount> {
+function getTwitchUsernames(
+    accounts: TwitterTopAccount[]
+): Record<string, TwitterTopAccount> {
     const usernames = new Map<string, TwitterTopAccount>();
 
     for (const acc of accounts) {
@@ -144,6 +155,12 @@ async function getTopAccounts(
     });
 }
 
+function sortTopAccounts(a: TopAccount, b: TopAccount) {
+    const byLive = Number(b.isLiveOnTwitch) - Number(a.isLiveOnTwitch);
+    if (byLive) return byLive;
+    return a.displayName.localeCompare(b.displayName);
+}
+
 export default async function handleTopAccounts(
     req: Request,
     res: Response
@@ -152,6 +169,10 @@ export default async function handleTopAccounts(
         const session = req.cookies["Twitter-Session"];
         const topTwitterAccounts = await getTwitterTopAccounts(session);
         const topAccounts = await getTopAccounts(topTwitterAccounts);
+
+        // show live accounts first, otherwise by their name
+        topAccounts.sort(sortTopAccounts);
+
         res.json({data: topAccounts});
     } catch (err) {
         console.error(err);
