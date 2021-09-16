@@ -4,6 +4,7 @@ import {Request, Response} from "express";
 import fetch from "node-fetch";
 import {TwitterApi} from "twitter-api-v2";
 import {twitterBaseUserId} from "./config";
+import TimeoutCache from "./utils/TimeoutCache";
 import replaceAsync from "./utils/replaceAsync";
 import {twitchApi} from "./utils/twitch";
 import {defaultTwitterSession, twitterSessions} from "./utils/twitter";
@@ -38,12 +39,18 @@ async function getUserIdToCheck(session?: TwitterApi) {
     }
 }
 
+const ONE_HOUR = 1000 * 60 * 60;
 const getRedirectMutex = new Semaphore(20);
+const redirectCache = new TimeoutCache<string, string>(6 * ONE_HOUR);
 function getRedirect(link: string): Promise<string> {
+    const cache = redirectCache.get(link);
+    if (cache) return Promise.resolve(cache);
+
     return getRedirectMutex.runExclusive(async () => {
         try {
             const response = await fetch(link);
             debug("Finished checking redirect of %s (%s)", link, response.url);
+            redirectCache.set(link, response.url);
             return response.url;
         } catch {
             return link;
