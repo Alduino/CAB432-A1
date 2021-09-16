@@ -42,7 +42,7 @@ function getRedirect(link: string): Promise<string> {
 
     return getRedirectMutex.runExclusive(async () => {
         try {
-            const response = await fetch(link);
+            const response = await fetch(link, {timeout: 500});
             debug("Finished checking redirect of %s (%s)", link, response.url);
             redirectCache.set(link, response.url);
             return response.url;
@@ -76,7 +76,7 @@ async function getTwitterTopAccounts(
 
     debug("Checking the users that are following %s", checkUserId);
     const following = await api.v2.following(checkUserId, {
-        max_results: 50,
+        max_results: 1000,
         "user.fields": ["verified", "description"]
     });
 
