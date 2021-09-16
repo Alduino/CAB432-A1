@@ -60,9 +60,13 @@ async function loadRedirectingLinks(description: string): Promise<string> {
     );
 }
 
+const topAccountsCache = new TimeoutCache<string | undefined, TwitterTopAccount[]>(ONE_HOUR);
 async function getTwitterTopAccounts(
     twSession?: string
 ): Promise<TwitterTopAccount[]> {
+    const cacheItem = topAccountsCache.get(twSession);
+    if (cacheItem) return cacheItem;
+
     const twitterSession = twSession
         ? twitterSessions.get(twSession)
         : undefined;
@@ -87,6 +91,8 @@ async function getTwitterTopAccounts(
         }))
     );
     debug("Got twitter accounts with updated links");
+
+    topAccountsCache.set(twSession, twitterAccounts);
     return twitterAccounts;
 }
 
