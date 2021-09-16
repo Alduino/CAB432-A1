@@ -1,5 +1,7 @@
 import {TopAccount} from "@cab432-a1/common";
 import {
+    AspectRatio,
+    Box,
     Center,
     Heading,
     HStack,
@@ -17,6 +19,49 @@ import useSWR from "swr";
 import {AccountName} from "../components/AccountName";
 import {LiveIcon} from "../components/LiveIcon";
 import fetchJson from "../utils/fetchJson";
+
+interface ViewProps {
+    account: TopAccount;
+}
+
+function LiveView({account}: ViewProps): ReactElement | null {
+    const src = `https://player.twitch.tv/?channel=${account.twitchLogin}&parent=${location.hostname}&muted=true`;
+
+    return (
+        <AspectRatio ratio={16 / 9} borderRadius="md" overflow="hidden">
+            <iframe allowFullScreen src={src} />
+        </AspectRatio>
+    );
+}
+
+function OfflineView({account}: ViewProps): ReactElement {
+    return (
+        <Box
+            w="full"
+            h="3xs"
+            backgroundImage={account.notLiveCoverUrl}
+            backgroundSize="cover"
+            backgroundPosition="center center"
+            position="relative"
+            borderRadius="md"
+            overflow="hidden"
+        >
+            <Box
+                position="absolute"
+                left={0}
+                right={0}
+                bottom={0}
+                height="auto"
+                bg="blackAlpha.800"
+                p={2}
+            >
+                <Text color="white" align="center">
+                    Sorry, {account.displayName} isn&lsquo;t live right now.
+                </Text>
+            </Box>
+        </Box>
+    );
+}
 
 export default function AccountPage(): ReactElement {
     const {id} = useParams<{id: string}>();
@@ -36,7 +81,7 @@ export default function AccountPage(): ReactElement {
     }
 
     return (
-        <Stack>
+        <Stack spacing={8}>
             <HStack spacing={4}>
                 <Image src={data.profilePictureUrl} h={12} borderRadius="md" />
                 <Stack spacing={0}>
@@ -76,6 +121,11 @@ export default function AccountPage(): ReactElement {
                     </HStack>
                 </Stack>
             </HStack>
+            {data.twitchStreamId ? (
+                <LiveView account={data} />
+            ) : (
+                <OfflineView account={data} />
+            )}
         </Stack>
     );
 }

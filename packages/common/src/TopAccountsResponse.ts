@@ -8,6 +8,7 @@ export interface TopAccount {
     twitchLogin: string;
     twitchStreamId?: string;
     profilePictureUrl: string;
+    notLiveCoverUrl: string;
     displayName: string;
     description: string;
 }

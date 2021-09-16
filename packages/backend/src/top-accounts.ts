@@ -187,6 +187,7 @@ async function getTopAccounts(
             twitchLogin: twitchAccount.login,
             twitchStreamId: streams[twitchName]?.[0]?.id,
             profilePictureUrl: twitchAccount.profileImageUrl,
+            notLiveCoverUrl: twitchAccount.offlineImageUrl,
             displayName: twitchAccount.displayName,
             description: user.description
         };
