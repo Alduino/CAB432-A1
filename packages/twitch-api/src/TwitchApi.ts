@@ -1,5 +1,5 @@
 import {URL} from "url";
-import {requireOkResponse} from "@cab432-a1/common";
+import {requireOkResponse, TimeoutCache} from "@cab432-a1/common";
 import createDebug from "debug";
 import fetch, {RequestInit} from "node-fetch";
 import urljoin from "url-join";
@@ -14,13 +14,16 @@ import {
 } from "./types";
 import {SimpleMethodMutex} from "./utils/MethodMutex";
 
-const debug = createDebug("app:api:twitch");
-const requestDebug = createDebug("app:api:twitch:request");
+const debug = createDebug("api:twitch");
+const requestDebug = createDebug("api:twitch:request");
+
+const ONE_HOUR = 1000 * 60 * 60;
 
 export interface TwitchApiOpts {
     apiKey: string;
     apiSecret: string;
     baseUrl?: string;
+    cacheDuration?: number;
 }
 
 export default class TwitchApi {
@@ -32,10 +35,17 @@ export default class TwitchApi {
     private readonly apiSecret: string;
     private readonly baseUrl: string;
 
+    private readonly usersByLoginsCache: TimeoutCache<string, TwitchUser>;
+
     constructor(opts: TwitchApiOpts) {
         this.apiKey = opts.apiKey;
         this.apiSecret = opts.apiSecret;
         this.baseUrl = opts.baseUrl ?? "https://api.twitch.tv/helix";
+
+        this.usersByLoginsCache = new TimeoutCache<string, TwitchUser>(
+            "twitch-api:users-by-logins",
+            opts.cacheDuration ?? ONE_HOUR
+        );
     }
 
     /**
@@ -76,7 +86,10 @@ export default class TwitchApi {
         const resultList: T[] = [];
 
         while (totalCount === 0 || currentCount < totalCount - maxPerReq) {
-            const thisCount = totalCount === 0 ? maxPerReq : Math.min(totalCount - currentCount, maxPerReq);
+            const thisCount =
+                totalCount === 0
+                    ? maxPerReq
+                    : Math.min(totalCount - currentCount, maxPerReq);
 
             const result: TwitchCursorResponseType<T[]> = await request(
                 thisCount,
@@ -144,15 +157,38 @@ Request: ${path}`;
     /**
      * Returns a list of users by their logins
      * @param logins The logins to search for
+     * @remarks Cached by default for an hour
      */
     async getUsersByLogins(
         logins: string[]
     ): Promise<Record<string, TwitchUser>> {
-        const users = await this.getUsers("login", logins);
-
-        return Object.fromEntries(
-            users.map(usr => [usr.login, new TwitchUser(this, usr)])
+        const cachedLogins = new Map(
+            logins
+                .map(
+                    login =>
+                        [login, this.usersByLoginsCache.get(login)] as [
+                            string,
+                            TwitchUser
+                        ]
+                )
+                .filter(v => v[1])
         );
+        const uncachedLogins = logins.filter(login => !cachedLogins.has(login));
+
+        const users = await this.getUsers("login", uncachedLogins);
+
+        const twitchUsers = users.map(
+            usr => [usr.login, new TwitchUser(this, usr)] as const
+        );
+
+        for (const [key, value] of twitchUsers) {
+            this.usersByLoginsCache.set(key, value);
+        }
+
+        return Object.fromEntries([
+            ...twitchUsers,
+            ...Array.from(cachedLogins.entries())
+        ]);
     }
 
     /**
