@@ -1,10 +1,12 @@
+import {ok as assert} from "assert";
 import {TimeoutCache, TopAccount} from "@cab432-a1/common";
 import {Semaphore} from "async-mutex";
 import debugBuilder from "debug";
 import {Request, Response} from "express";
 import fetch from "node-fetch";
-import {TwitterApi} from "twitter-api-v2";
+import {TweetV2LookupResult, TwitterApi, UserV2} from "twitter-api-v2";
 import {twitterBaseUserId} from "./config";
+import RequiredProperties from "./utils/RequiredProperties";
 import replaceAsync from "./utils/replaceAsync";
 import {twitchApi} from "./utils/twitch";
 import {defaultTwitterSession, twitterSessions} from "./utils/twitter";
@@ -18,6 +20,7 @@ interface TwitterTopAccount {
     username: string;
     description: string;
     verified: boolean;
+    pinnedTweetId?: string;
 }
 
 async function getUserIdToCheck(session?: TwitterApi) {
@@ -72,6 +75,19 @@ const topAccountUsersCache = new TimeoutCache<string, TwitterTopAccount>(
     ONE_HOUR * 4
 );
 
+async function createTwitterTopAccount(
+    account: UserV2
+): Promise<TwitterTopAccount> {
+    return {
+        id: account.id,
+        name: account.name,
+        username: account.username,
+        verified: account.verified ?? false,
+        pinnedTweetId: account.pinned_tweet_id,
+        description: await loadRedirectingLinks(account.description ?? "")
+    };
+}
+
 async function getTwitterTopAccount(
     id: string,
     twSession?: string
@@ -85,18 +101,14 @@ async function getTwitterTopAccount(
 
     const api = twitterSession ?? (await defaultTwitterSession.appLogin());
     const {data: account} = await api.v2.user(id, {
-        "user.fields": ["verified", "description"]
+        "user.fields": ["verified", "description", "pinned_tweet_id"]
     });
 
     if (!account) return undefined;
 
-    const twitterTopAccount: TwitterTopAccount = {
-        id: account.id,
-        name: account.name,
-        username: account.username,
-        verified: account.verified ?? false,
-        description: await loadRedirectingLinks(account.description ?? "")
-    };
+    const twitterTopAccount: TwitterTopAccount = await createTwitterTopAccount(
+        account
+    );
 
     topAccountUsersCache.set(id, twitterTopAccount);
     return twitterTopAccount;
@@ -124,17 +136,11 @@ async function getTwitterTopAccounts(
     debug("Checking the users that are following %s", checkUserId);
     const following = await api.v2.following(checkUserId, {
         max_results: 1000,
-        "user.fields": ["verified", "description"]
+        "user.fields": ["verified", "description", "pinned_tweet_id"]
     });
 
     const twitterAccounts = await Promise.all(
-        following.data.map(async acc => ({
-            id: acc.id,
-            name: acc.name,
-            username: acc.username,
-            verified: acc.verified ?? false,
-            description: await loadRedirectingLinks(acc.description ?? "")
-        }))
+        following.data.map(acc => createTwitterTopAccount(acc))
     );
     debug("Got twitter accounts with updated links");
 
@@ -151,23 +157,89 @@ function getTwitchUsername(description: string): string | undefined {
     return match[1].toLowerCase();
 }
 
-function getTwitchUsernames(
+function getTwitchUsernamesFromDescription(
     accounts: TwitterTopAccount[]
 ): Record<string, TwitterTopAccount> {
     const usernames = new Map<string, TwitterTopAccount>();
 
     for (const acc of accounts) {
-        const twitchUsername = getTwitchUsername(acc.description);
-        if (twitchUsername?.trim()) usernames.set(twitchUsername.trim(), acc);
+        const twitchUsername = getTwitchUsername(acc.description)?.trim();
+        if (twitchUsername) usernames.set(twitchUsername, acc);
     }
 
     return Object.fromEntries(usernames.entries());
 }
 
+async function getTwitchUsernamesFromPinnedTweet(
+    apiClient: TwitterApi,
+    accounts: RequiredProperties<TwitterTopAccount, "pinnedTweetId">[]
+) {
+    const batchResults: Promise<TweetV2LookupResult>[] = [];
+
+    // twitter lets us batch in groups of 100
+    for (let i = 0; i < accounts.length; i += 100) {
+        const thisBatchIds = accounts
+            .slice(i, i + 100)
+            .map(acc => acc.pinnedTweetId);
+        const result = apiClient.v2.tweets(thisBatchIds, {
+            "tweet.fields": "author_id"
+        });
+        batchResults.push(result);
+    }
+
+    const pinnedTweets = await Promise.all(batchResults).then(res =>
+        res.flatMap(item => item.data)
+    );
+
+    const twitterAccounts = new Map(accounts.map(acc => [acc.id, acc]));
+
+    const usernames = new Map<string, TwitterTopAccount>();
+
+    await Promise.all(
+        pinnedTweets.map(async tweet => {
+            const source = await loadRedirectingLinks(tweet.text);
+            const twitchUsername = getTwitchUsername(source)?.trim();
+            assert(tweet.author_id, "tweet does not have an author id");
+
+            const twitterUser = twitterAccounts.get(tweet.author_id);
+            assert(twitterUser, "could not find user with the author id");
+
+            if (twitchUsername) usernames.set(twitchUsername, twitterUser);
+        })
+    );
+
+    return Object.fromEntries(usernames.entries());
+}
+
 async function getTopAccounts(
+    apiClient: TwitterApi,
     twitterTopAccounts: TwitterTopAccount[]
 ): Promise<TopAccount[]> {
-    const usernames = getTwitchUsernames(twitterTopAccounts);
+    const usernamesFromDescription =
+        getTwitchUsernamesFromDescription(twitterTopAccounts);
+    const usersWithNameInDescription = new Set(
+        Object.values(usernamesFromDescription).map(usr => usr.id)
+    );
+
+    const accountsWithPinnedTweet = twitterTopAccounts.filter(
+        acc => !!acc.pinnedTweetId && !usersWithNameInDescription.has(acc.id)
+    ) as RequiredProperties<TwitterTopAccount, "pinnedTweetId">[];
+    const usernamesFromPinned = await getTwitchUsernamesFromPinnedTweet(
+        apiClient,
+        accountsWithPinnedTweet
+    );
+
+    debug(
+        "Linked %s accounts from a description, and %s from a pinned tweet, out of %s",
+        Object.keys(usernamesFromDescription).length,
+        Object.keys(usernamesFromPinned).length,
+        twitterTopAccounts.length
+    );
+
+    const usernames = {
+        ...usernamesFromDescription,
+        ...usernamesFromPinned
+    };
 
     debug("Getting Twitch users");
     const accounts = await twitchApi.getUsersByLogins(Object.keys(usernames));
@@ -175,8 +247,9 @@ async function getTopAccounts(
     debug("Getting Twitch streams");
     const streams = await twitchApi.getStreamsByLogins(Object.keys(usernames));
 
-    return Object.entries(usernames).map(([twitchName, user]) => {
+    return Object.entries(usernames).map(([twitchName, user]): TopAccount | undefined => {
         const twitchAccount = accounts[twitchName];
+        if (!twitchAccount) return;
 
         return {
             id: user.id,
@@ -191,7 +264,7 @@ async function getTopAccounts(
             displayName: twitchAccount.displayName,
             description: user.description
         };
-    });
+    }).filter(acc => acc) as TopAccount[];
 }
 
 function sortTopAccounts(a: TopAccount, b: TopAccount) {
@@ -208,8 +281,12 @@ export default async function handleTopAccounts(
 ): Promise<void> {
     try {
         const session = req.cookies["Twitter-Session"];
+        const apiClient =
+            twitterSessions.get(session) ??
+            (await defaultTwitterSession.appLogin());
+
         const topTwitterAccounts = await getTwitterTopAccounts(session);
-        const topAccounts = await getTopAccounts(topTwitterAccounts);
+        const topAccounts = await getTopAccounts(apiClient, topTwitterAccounts);
 
         // show live accounts first, otherwise by their name
         topAccounts.sort(sortTopAccounts);
@@ -237,7 +314,12 @@ export async function handleTopAccount(
             return;
         }
 
-        const [topAccount] = await getTopAccounts([topTwitterAccount]);
+        const apiClient =
+            twitterSessions.get(session) ??
+            (await defaultTwitterSession.appLogin());
+        const [topAccount] = await getTopAccounts(apiClient, [
+            topTwitterAccount
+        ]);
 
         if (!topAccount) {
             writeError(res, "Not found", 404);
