@@ -197,6 +197,7 @@ Request: ${path}`;
      * @param values The values to query by
      */
     private getUsers(key: string, values: string[]) {
+        if (values.length === 0) return Promise.resolve([]);
         return this.batch(values, 100, values =>
             this.request<TwitchResponseType<TwitchUserType[]>>(
                 TwitchApi.buildUrl(
@@ -218,6 +219,7 @@ Request: ${path}`;
         values: string[],
         count: number
     ): Promise<TwitchStreamType[]> {
+        if (values.length === 0) return Promise.resolve([]);
         return this.batch(values, 100, values =>
             TwitchApi.paginate(count, 100, (count, after) =>
                 this.request<TwitchCursorResponseType<TwitchStreamType[]>>(
@@ -285,6 +287,6 @@ Request: ${path}`;
             groups.push(data.slice(i, maxEach));
         }
 
-        return Promise.all(groups.map(group => fetch(group)));
+        return await Promise.all(groups.map(group => fetch(group)));
     }
 }
