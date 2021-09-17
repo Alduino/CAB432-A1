@@ -284,7 +284,7 @@ Request: ${path}`;
         const groups: T[][] = [];
 
         for (let i = 0; i < data.length; i += maxEach) {
-            groups.push(data.slice(i, maxEach));
+            groups.push(data.slice(i, i + maxEach));
         }
 
         return await Promise.all(groups.map(group => fetch(group)));
