@@ -7,11 +7,13 @@ import {
     Image,
     LinkBox,
     LinkOverlay,
+    Spinner,
+    Stack,
     Text,
     VStack
 } from "@chakra-ui/react";
 import {CaretRight} from "phosphor-react";
-import {ReactElement} from "react";
+import {ReactElement, ReactNode} from "react";
 import {Link} from "react-router-dom";
 import useSWR from "swr";
 import {AccountName} from "../components/AccountName";
@@ -69,14 +71,49 @@ const spinnerMessages = [
     "Making Brisbane lock down"
 ];
 
+export interface LoadingNewDataWrapperProps {
+    children: ReactNode;
+    isLoading: boolean;
+}
+
+function LoadingNewDataWrapper({
+    isLoading,
+    children
+}: LoadingNewDataWrapperProps): ReactElement {
+    return (
+        <Stack alignItems="stretch" h="full" spacing={0}>
+            <Box flexGrow={1} overflowY="auto">
+                {children}
+            </Box>
+            {isLoading && (
+                <HStack
+                    p={4}
+                    borderTop="1px solid"
+                    borderColor="gray.300"
+                    fontSize="sm"
+                >
+                    <Spinner size="sm" />
+                    <Text>We&lsquo;re loading new data</Text>
+                </HStack>
+            )}
+        </Stack>
+    );
+}
+
 export default function HomePage(): ReactElement {
-    const {data, error} = useSWR<TopAccountsResponse>(
+    const {data, error, isValidating} = useSWR<TopAccountsResponse>(
         "/api/top-accounts",
         fetchJson
     );
 
     if (error) {
-        return <Text>Something went wrong. Try refreshing the page.</Text>;
+        return (
+            <LoadingNewDataWrapper isLoading={isValidating}>
+                <Text p={4}>
+                    Something went wrong. Try refreshing the page.
+                </Text>
+            </LoadingNewDataWrapper>
+        );
     } else if (!data) {
         return (
             <Center h="full">
@@ -89,16 +126,18 @@ export default function HomePage(): ReactElement {
     }
 
     return (
-        <VStack spacing={4} p={4} height="100%" overflowY="auto">
-            {data &&
+        <LoadingNewDataWrapper isLoading={isValidating}>
+            <VStack spacing={4} p={4}>
+                {data &&
                 data.data.map(item => (
                     <UserDisplay key={item.id} account={item} />
                 ))}
-            <Text size="sm" color="blackAlpha.500">
-                {data.data.length > 0
-                    ? "That's all"
-                    : "We couldn't find any Twitch accounts for the people you follow"}
-            </Text>
-        </VStack>
+                <Text size="sm" color="blackAlpha.500">
+                    {data.data.length > 0
+                        ? "That's all"
+                        : "We couldn't find any Twitch accounts for the people you follow"}
+                </Text>
+            </VStack>
+        </LoadingNewDataWrapper>
     );
 }
