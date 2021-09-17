@@ -28,7 +28,9 @@ export function Layout(props: FlexProps): ReactElement {
     return (
         <Center bg={bg} w="full" h="100vh">
             <VStack spacing={4}>
-                <Image src={logo} />
+                <RouterLink to="/home">
+                    <Image src={logo} />
+                </RouterLink>
                 <Box
                     w="md"
                     h="xl"
