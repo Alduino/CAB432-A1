@@ -222,7 +222,7 @@ async function getUsernamesFromDescription(
 ): Promise<Map<TwitterTopAccount, AccountIdentifiers>> {
     const usernames = new Map<TwitterTopAccount, AccountIdentifiers>();
 
-    for (const acc of accounts) {
+    await Promise.all(accounts.map(async acc => {
         const twitchUsername = getTwitchUsername(acc.description)?.trim();
         const youtubeId = await getYoutubeId(acc.description);
 
@@ -232,7 +232,7 @@ async function getUsernamesFromDescription(
                 youtubeId
             });
         }
-    }
+    }));
 
     return usernames;
 }
