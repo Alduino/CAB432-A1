@@ -234,8 +234,12 @@ Request: ${path}`;
     }
 
     private scheduleRefresh(ms: number) {
-        debug("Refreshing the access token");
+        debug(
+            "Will refresh the access token in %s minutes",
+            (ms / 60000).toFixed(1)
+        );
         setTimeout(() => {
+            debug("Refreshing the access token");
             this.initialised = false;
         }, ms);
     }

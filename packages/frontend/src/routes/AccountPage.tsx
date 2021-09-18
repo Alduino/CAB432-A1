@@ -1,9 +1,15 @@
-import {isResponseError, TopAccount} from "@cab432-a1/common";
+import {
+    isResponseError,
+    StreamTweet,
+    StreamTweetsResponse,
+    TopAccount
+} from "@cab432-a1/common";
 import {
     AspectRatio,
     Box,
     Center,
     chakra,
+    Circle,
     Heading,
     HStack,
     Icon,
@@ -11,19 +17,23 @@ import {
     Link,
     Spinner,
     Stack,
+    StackDivider,
     Tab,
     TabList,
     TabPanel,
     TabPanels,
     Tabs,
-    Text
+    Text,
+    Tooltip
 } from "@chakra-ui/react";
-import {TwitchLogo, TwitterLogo} from "phosphor-react";
+import {TwitchLogo, TwitterLogo, WarningCircle} from "phosphor-react";
 import {ReactElement} from "react";
 import {useParams} from "react-router-dom";
+import ReactTimeago from "react-timeago";
 import useSWR from "swr";
 import {AccountName} from "../components/AccountName";
 import {LiveIcon} from "../components/LiveIcon";
+import {VerifiedBadge} from "../components/VerifiedBadge";
 import fetchJson from "../utils/fetchJson";
 
 interface ViewProps {
@@ -32,8 +42,77 @@ interface ViewProps {
 
 const IFrame = chakra("iframe");
 
+interface StreamTweetProps {
+    streamTweet: StreamTweet;
+}
+
+function StreamTweetDisplay({streamTweet}: StreamTweetProps): ReactElement {
+    return (
+        <Stack spacing={0}>
+            <HStack spacing={1} color="blackAlpha.600">
+                <Text fontWeight="bold" color="gray.900">{streamTweet.authorDisplayName}</Text>
+                {streamTweet.authorIsVerified && <VerifiedBadge />}
+                <Text>
+                    @{streamTweet.authorUsername}
+                </Text>
+                <Text>·</Text>
+                <Text><ReactTimeago date={streamTweet.publishTime} /></Text>
+            </HStack>
+            <Text fontSize="sm">{streamTweet.source}</Text>
+        </Stack>
+    );
+}
+
 function StreamTweets({account}: ViewProps): ReactElement {
-    return <p>todo</p>;
+    const {data: streamTweets, error} = useSWR<StreamTweetsResponse>(
+        `/api/stream-tweets?id=${account.id}`,
+        fetchJson
+    );
+
+    if (streamTweets) {
+        return (
+            <Box position="relative" py={6} borderColor="blackAlpha.300">
+                <Stack
+                    borderColor="blackAlpha.100"
+                    alignItems="stretch"
+                    divider={<StackDivider w="50%" alignSelf="center" />}
+                >
+                    {streamTweets.data.map(streamTweet => (
+                        <StreamTweetDisplay
+                            key={streamTweet.tweetId}
+                            streamTweet={streamTweet}
+                        />
+                    ))}
+                </Stack>
+                {error && (
+                    <Tooltip label="New data couldn't be loaded">
+                        <Circle
+                            position="absolute"
+                            top={2}
+                            right={2}
+                            p={2}
+                            bg="red.600"
+                        >
+                            <Icon as={WarningCircle} color="white" />
+                        </Circle>
+                    </Tooltip>
+                )}
+            </Box>
+        );
+    } else if (error) {
+        return (
+            <HStack pt={6}>
+                <Icon as={WarningCircle} color="red.600" />{" "}
+                <Text>We couldn&lsquo;t load this stream&lsquo;s tweets.</Text>
+            </HStack>
+        );
+    } else {
+        return (
+            <Center pt={6}>
+                <Spinner />
+            </Center>
+        );
+    }
 }
 
 interface LastVodProps {
