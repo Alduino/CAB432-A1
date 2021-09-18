@@ -31,13 +31,21 @@ export default async function persistCache(
     }, interval);
 
     if (existsSync(path)) {
+        const loadStart = Date.now();
         const source: TimeoutStoreStructure<unknown, unknown> = JSON.parse(
             await readFile(path, "utf8")
         );
 
-        debug("Loading persistent storage");
-
+        const loadSave = Date.now();
         cache.writeToStore(source);
+
+        const loadDone = Date.now();
+        debug(
+            "Loaded persistent storage in %sms (read/parse=%sms, write=%sms)",
+            loadDone - loadStart,
+            loadSave - loadStart,
+            loadDone - loadSave
+        );
     }
 
     return () => clearInterval(intervalId);

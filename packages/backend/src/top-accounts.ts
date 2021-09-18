@@ -163,7 +163,10 @@ async function getTwitterTopAccounts(
         "user.fields": ["verified", "description", "pinned_tweet_id"]
     });
 
-    debug("Loading the account information for %s accounts", following.data.length);
+    debug(
+        "Loading the account information for %s accounts",
+        following.data.length
+    );
     const twitterAccounts = await Promise.all(
         following.data.map(acc => createTwitterTopAccount(acc))
     );
@@ -217,22 +220,36 @@ async function getYoutubeId(source: string): Promise<string | undefined> {
     return channel.id;
 }
 
+const twitterIdentifiersCache = new TimeoutCache<string, AccountIdentifiers>(
+    "twitter-identifiers",
+    4 * ONE_HOUR
+);
+persistCache(twitterIdentifiersCache, "/tmp/twitter-identifiers-cache.json");
+
 async function getUsernamesFromDescription(
     accounts: TwitterTopAccount[]
 ): Promise<Map<TwitterTopAccount, AccountIdentifiers>> {
     const usernames = new Map<TwitterTopAccount, AccountIdentifiers>();
 
-    await Promise.all(accounts.map(async acc => {
-        const twitchUsername = getTwitchUsername(acc.description)?.trim();
-        const youtubeId = await getYoutubeId(acc.description);
+    await Promise.all(
+        accounts.map(async acc => {
+            const cacheItem = twitterIdentifiersCache.get(acc.id);
+            if (cacheItem) return cacheItem;
 
-        if (twitchUsername) {
-            usernames.set(acc, {
-                twitchLogin: twitchUsername,
-                youtubeId
-            });
-        }
-    }));
+            const twitchUsername = getTwitchUsername(acc.description)?.trim();
+            const youtubeId = await getYoutubeId(acc.description);
+
+            if (twitchUsername) {
+                const identifiers: AccountIdentifiers = {
+                    twitchLogin: twitchUsername,
+                    youtubeId
+                };
+
+                twitterIdentifiersCache.set(acc.id, identifiers);
+                usernames.set(acc, identifiers);
+            }
+        })
+    );
 
     return usernames;
 }
@@ -243,9 +260,15 @@ async function getUsernamesFromPinnedTweet(
 ): Promise<Map<TwitterTopAccount, AccountIdentifiers>> {
     const batchResults: Promise<TweetV2LookupResult>[] = [];
 
+    const uncachedItems = accounts.filter(
+        acc => !twitterIdentifiersCache.has(acc.id)
+    );
+
+    debug("Loading source of %s uncached pinned tweets", uncachedItems.length);
+
     // twitter lets us batch in groups of 100
-    for (let i = 0; i < accounts.length; i += 100) {
-        const thisBatchIds = accounts
+    for (let i = 0; i < uncachedItems.length; i += 100) {
+        const thisBatchIds = uncachedItems
             .slice(i, i + 100)
             .map(acc => acc.pinnedTweetId);
         const result = apiClient.v2.tweets(thisBatchIds, {
@@ -258,9 +281,15 @@ async function getUsernamesFromPinnedTweet(
         res.flatMap(item => item.data)
     );
 
-    const twitterAccounts = new Map(accounts.map(acc => [acc.id, acc]));
+    const twitterAccounts = new Map(uncachedItems.map(acc => [acc.id, acc]));
 
     const usernames = new Map<TwitterTopAccount, AccountIdentifiers>();
+
+    for (const acc of accounts) {
+        const cached = twitterIdentifiersCache.get(acc.id);
+        if (!cached) continue;
+        usernames.set(acc, cached);
+    }
 
     await Promise.all(
         pinnedTweets.map(async tweet => {
@@ -273,10 +302,13 @@ async function getUsernamesFromPinnedTweet(
             assert(twitterUser, "could not find user with the author id");
 
             if (twitchUsername) {
-                usernames.set(twitterUser, {
+                const identifiers: AccountIdentifiers = {
                     twitchLogin: twitchUsername,
                     youtubeId
-                });
+                };
+
+                twitterIdentifiersCache.set(twitterUser.id, identifiers);
+                usernames.set(twitterUser, identifiers);
             }
         })
     );
