@@ -57,7 +57,7 @@ async function getUserIdToCheck(session?: TwitterApi) {
 const ONE_HOUR_SECONDS = 60 * 60;
 const ONE_HOUR = ONE_HOUR_SECONDS * 1000;
 
-const getRedirectMutex = new Semaphore(5);
+const getRedirectMutex = new Semaphore(50);
 const redirectCache = new TimeoutCache<string, string>(
     "twitter-redirect",
     6 * ONE_HOUR
@@ -152,6 +152,7 @@ async function getTwitterTopAccounts(
         ? twitterSessions.get(twSession)
         : undefined;
 
+    debug("Logging into the API");
     const api = twitterSession ?? (await defaultTwitterSession.appLogin());
 
     const checkUserId = await getUserIdToCheck(twitterSession);
@@ -162,6 +163,7 @@ async function getTwitterTopAccounts(
         "user.fields": ["verified", "description", "pinned_tweet_id"]
     });
 
+    debug("Loading the account information for %s accounts", following.data.length);
     const twitterAccounts = await Promise.all(
         following.data.map(acc => createTwitterTopAccount(acc))
     );
@@ -199,6 +201,9 @@ async function getYoutubeId(source: string): Promise<string | undefined> {
 
     const cachedItem = youtubeIdMappingCache.get(customNameFromUrl);
     if (cachedItem) return cachedItem;
+
+    // from matches to youtube videos
+    if (customNameFromUrl === "watch") return;
 
     const channels = await youtubeApi.channels.list({
         part: ["id"],
@@ -416,6 +421,7 @@ async function getTopAccounts(
     apiClient: TwitterApi,
     twitterTopAccounts: TwitterTopAccount[]
 ): Promise<TopAccount[]> {
+    debug("Finding usernames from account descriptions");
     const usernamesFromDescription = await getUsernamesFromDescription(
         twitterTopAccounts
     );
@@ -423,6 +429,7 @@ async function getTopAccounts(
         Array.from(usernamesFromDescription.keys()).map(usr => usr.id)
     );
 
+    debug("Finding usernames from pinned tweets");
     const accountsWithPinnedTweet = twitterTopAccounts.filter(
         acc => !!acc.pinnedTweetId && !usersWithNameInDescription.has(acc.id)
     ) as RequiredProperties<TwitterTopAccount, "pinnedTweetId">[];
@@ -507,7 +514,10 @@ export default async function handleTopAccounts(
             twitterSessions.get(session) ??
             (await defaultTwitterSession.appLogin());
 
+        debug("Loading the top Twitter accounts for the session");
         const topTwitterAccounts = await getTwitterTopAccounts(session);
+
+        debug("Linking the Twitter accounts with their other information");
         const topAccounts = await getTopAccounts(apiClient, topTwitterAccounts);
 
         // show live accounts first, otherwise by their name
