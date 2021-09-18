@@ -57,31 +57,48 @@ export default async function handleStreamTweets(
 
         const mentioningTweets = mostRecentMentioningTweetsResult.data.data;
 
-        const mentioningTweetAuthorIds = new Set(
-            mentioningTweets.map(tw => tw.author_id as string)
+        const mostRecentTweetsResult = await apiClient.v2.userTimeline(
+            thisUser.id,
+            {
+                start_time: thisStream.startedAt,
+                max_results: 15,
+                "tweet.fields": ["author_id", "created_at"]
+            }
         );
 
-        const mentioningTweetAuthorList = await apiClient.v2.users(
-            Array.from(mentioningTweetAuthorIds),
+        const selfTweets = mostRecentTweetsResult.data.data;
+
+        const tweets = [...mentioningTweets, ...selfTweets].sort(
+            (a, b) =>
+                new Date(b.created_at!).getTime() -
+                new Date(a.created_at!).getTime()
+        );
+
+        const tweetAuthorIds = new Set(
+            tweets.map(tw => tw.author_id as string)
+        );
+
+        const tweetAuthorList = await apiClient.v2.users(
+            Array.from(tweetAuthorIds),
             {
                 "user.fields": ["profile_image_url", "verified"]
             }
         );
 
-        const mentioningTweetAuthors = new Map(
-            mentioningTweetAuthorList.data.map(author => [author.id, author])
+        const tweetAuthors = new Map(
+            tweetAuthorList.data.map(author => [author.id, author])
         );
 
         const result: StreamTweetsResponse = {
             data: await Promise.all(
-                mentioningTweets.map(async tweet => {
+                tweets.map(async tweet => {
                     assert(tweet.author_id, "tweet does not have an author id");
                     assert(
                         tweet.created_at,
                         "tweet does not have a creation time"
                     );
 
-                    const author = mentioningTweetAuthors.get(tweet.author_id);
+                    const author = tweetAuthors.get(tweet.author_id);
                     assert(author, "tweet does not have an author");
 
                     return {
