@@ -19,6 +19,7 @@ import useSWR from "swr";
 import {AccountName} from "../components/AccountName";
 import {LiveIcon} from "../components/LiveIcon";
 import {MessageSpinner} from "../components/MessageSpinner";
+import {VodIcon} from "../components/VodIcon";
 import fetchJson from "../utils/fetchJson";
 
 interface UserDisplayProps {
@@ -45,6 +46,7 @@ function UserDisplay({account}: UserDisplayProps): ReactElement {
                 verified={account.twitterVerified}
             />
             {account.twitchStreamId && <LiveIcon />}
+            {account.youtube && <VodIcon />}
             <Box flexGrow={1} />
             <LinkOverlay as={Link} to={link}>
                 <Icon as={CaretRight} />
@@ -132,9 +134,9 @@ export default function HomePage(): ReactElement {
         <LoadingNewDataWrapper isLoading={isValidating}>
             <VStack spacing={4} p={4}>
                 {data &&
-                data.data.map(item => (
-                    <UserDisplay key={item.id} account={item} />
-                ))}
+                    data.data.map(item => (
+                        <UserDisplay key={item.id} account={item} />
+                    ))}
                 <Text size="sm" color="blackAlpha.500">
                     {data.data.length > 0
                         ? "That's all"

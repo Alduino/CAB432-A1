@@ -11,6 +11,11 @@ import {
     Link,
     Spinner,
     Stack,
+    Tab,
+    TabList,
+    TabPanel,
+    TabPanels,
+    Tabs,
     Text
 } from "@chakra-ui/react";
 import {TwitchLogo, TwitterLogo} from "phosphor-react";
@@ -27,15 +32,52 @@ interface ViewProps {
 
 const IFrame = chakra("iframe");
 
-function LiveView({account}: ViewProps): ReactElement | null {
+function StreamTweets({account}: ViewProps): ReactElement {
+    return <p>todo</p>;
+}
+
+interface LastVodProps {
+    youtube: Required<TopAccount>["youtube"];
+}
+
+function LastVod({youtube}: LastVodProps): ReactElement {
+    return (
+        <AspectRatio ratio={16 / 9} borderRadius="md" overflow="hidden">
+            <IFrame
+                allowFullScreen={true}
+                src={`https://www.youtube.com/embed/${youtube.id}`}
+            />
+        </AspectRatio>
+    );
+}
+
+function LiveView({account}: ViewProps): ReactElement {
     const src = `https://player.twitch.tv/?channel=${account.twitchLogin}&parent=${location.hostname}&muted=true`;
 
     return (
-        <Box px={4}>
+        <Stack px={4}>
             <AspectRatio ratio={16 / 9} borderRadius="md" overflow="hidden">
                 <IFrame allowFullScreen src={src} />
             </AspectRatio>
-        </Box>
+            {account.youtube ? (
+                <Tabs>
+                    <TabList>
+                        <Tab>Stream Tweets</Tab>
+                        <Tab>Last VOD</Tab>
+                    </TabList>
+                    <TabPanels>
+                        <TabPanel>
+                            <StreamTweets account={account} />
+                        </TabPanel>
+                        <TabPanel>
+                            <LastVod youtube={account.youtube} />
+                        </TabPanel>
+                    </TabPanels>
+                </Tabs>
+            ) : (
+                <StreamTweets account={account} />
+            )}
+        </Stack>
     );
 }
 
@@ -44,30 +86,40 @@ function OfflineView({account}: ViewProps): ReactElement {
     // margin we set on direct children
     return (
         <Box px={4}>
-            <Box
-                w="full"
-                h="3xs"
-                backgroundImage={account.notLiveCoverUrl}
-                backgroundSize="cover"
-                backgroundPosition="center center"
-                position="relative"
-                borderRadius="md"
-                overflow="hidden"
-            >
-                <Box
-                    position="absolute"
-                    left={0}
-                    right={0}
-                    bottom={0}
-                    height="auto"
-                    bg="blackAlpha.800"
-                    p={2}
-                >
-                    <Text color="white" align="center">
-                        Sorry, {account.displayName} isn&lsquo;t live right now.
+            {account.youtube ? (
+                <Stack>
+                    <Text>
+                        {account.displayName} isn&lsquo;t live right now, but
+                        you can watch their latest VOD on YouTube:
                     </Text>
+                </Stack>
+            ) : (
+                <Box
+                    w="full"
+                    h="3xs"
+                    backgroundImage={account.notLiveCoverUrl}
+                    backgroundSize="cover"
+                    backgroundPosition="center center"
+                    position="relative"
+                    borderRadius="md"
+                    overflow="hidden"
+                >
+                    <Box
+                        position="absolute"
+                        left={0}
+                        right={0}
+                        bottom={0}
+                        height="auto"
+                        bg="blackAlpha.800"
+                        p={2}
+                    >
+                        <Text color="white" align="center">
+                            Sorry, {account.displayName} isn&lsquo;t live right
+                            now.
+                        </Text>
+                    </Box>
                 </Box>
-            </Box>
+            )}
         </Box>
     );
 }
@@ -83,7 +135,7 @@ export default function AccountPage(): ReactElement {
         return (
             <Text p={4}>
                 {isResponseError(error) && error.response.status === 404
-                    ? "That user does't exist, or we couldn't find their Twitch account"
+                    ? "That user doesn't exist, or we couldn't find their Twitch account"
                     : "Something went wrong. Try refreshing the page."}
             </Text>
         );
@@ -96,7 +148,7 @@ export default function AccountPage(): ReactElement {
     }
 
     return (
-        <Stack spacing={4}>
+        <Stack spacing={4} overflowY="auto" height="full">
             <HStack
                 spacing={4}
                 p={4}
