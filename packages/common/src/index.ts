@@ -5,3 +5,4 @@ export type {
     TopAccount
 } from "./TopAccountsResponse";
 export {default as TimeoutCache} from "./TimeoutCache";
+export type {InvalidateState, TimeoutStoreStructure} from "./TimeoutCache";

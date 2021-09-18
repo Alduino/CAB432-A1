@@ -55,10 +55,13 @@ function UserDisplay({account}: UserDisplayProps): ReactElement {
 
 const spinnerMessages = [
     "Finding the followers",
+    "Querying Twitter's API",
     "Resolving the links",
     "Checking the stream status",
+    "Querying Twitch's API",
     "Crunching the data",
     "Baking a cake",
+    "Querying YouTube's API",
     "Waiting for friends to arrive",
     "Chatting with friends",
     "Eating the cake",

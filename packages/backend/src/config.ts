@@ -12,3 +12,6 @@ if (!twitchApiKey) throw new Error("TWITCH_API_KEY must be set");
 
 export const twitchApiSecret = process.env.TWITCH_API_SECRET as string;
 if (!twitchApiSecret) throw new Error("TWITCH_API_SECRET must be set");
+
+export const youtubeApiKey = process.env.YOUTUBE_API_KEY as string;
+if (!youtubeApiKey) throw new Error("YOUTUBE_API_KEY must be set");

@@ -11,6 +11,11 @@ export interface TopAccount {
     notLiveCoverUrl: string;
     displayName: string;
     description: string;
+    youtube?: {
+        id: string;
+        title: string;
+        embedHtml: string;
+    };
 }
 
 export default interface TopAccountsResponse {
