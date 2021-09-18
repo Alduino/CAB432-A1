@@ -1,4 +1,4 @@
-import {TopAccount, TopAccountsResponse} from "@cab432-a1/common";
+import {DefaultRootResponse, TopAccount, TopAccountsResponse} from "@cab432-a1/common";
 import {
     Box,
     Center,
@@ -106,12 +106,14 @@ function LoadingNewDataWrapper({
 }
 
 export default function HomePage(): ReactElement {
+    const {data: targetUserId, error: targetUserIdError} = useSWR<DefaultRootResponse>("/api/default-root", fetchJson);
+
     const {data, error, isValidating} = useSWR<TopAccountsResponse>(
-        "/api/top-accounts",
+        () => `/api/top-accounts?id=${targetUserId!.id}`,
         fetchJson
     );
 
-    if (error) {
+    if (targetUserIdError || error) {
         return (
             <LoadingNewDataWrapper isLoading={isValidating}>
                 <Text p={4}>

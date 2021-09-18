@@ -92,6 +92,7 @@ function OfflineView({account}: ViewProps): ReactElement {
                         {account.displayName} isn&lsquo;t live right now, but
                         you can watch their latest VOD on YouTube:
                     </Text>
+                    <LastVod youtube={account.youtube} />
                 </Stack>
             ) : (
                 <Box

@@ -7,12 +7,11 @@ import {youtube_v3} from "googleapis";
 import {parse as parseDuration, toSeconds} from "iso8601-duration";
 import fetch from "node-fetch";
 import {TweetV2LookupResult, TwitterApi, UserV2} from "twitter-api-v2";
-import {twitterBaseUserId} from "./config";
 import RequiredProperties from "./utils/RequiredProperties";
+import getTwitterSession from "./utils/getTwitterSession";
 import persistCache from "./utils/persistCache";
 import replaceAsync from "./utils/replaceAsync";
 import {twitchApi} from "./utils/twitch";
-import {defaultTwitterSession, twitterSessions} from "./utils/twitter";
 import writeError from "./utils/writeError";
 import {youtubeApi} from "./utils/youtube";
 
@@ -39,19 +38,6 @@ interface YoutubeVod {
     title: string;
     // in seconds
     duration: number;
-}
-
-async function getUserIdToCheck(session?: TwitterApi) {
-    if (session) {
-        const {screen_name} = await session.currentUser();
-        const {
-            data: {id}
-        } = await session.v2.userByUsername(screen_name);
-
-        return id;
-    } else {
-        return twitterBaseUserId;
-    }
 }
 
 const ONE_HOUR_SECONDS = 60 * 60;
@@ -112,18 +98,13 @@ async function createTwitterTopAccount(
 }
 
 async function getTwitterTopAccount(
-    id: string,
-    twSession?: string
+    apiClient: TwitterApi,
+    userId: string
 ): Promise<TwitterTopAccount | undefined> {
-    const cacheItem = topAccountUsersCache.get(id);
+    const cacheItem = topAccountUsersCache.get(userId);
     if (cacheItem) return cacheItem;
 
-    const twitterSession = twSession
-        ? twitterSessions.get(twSession)
-        : undefined;
-
-    const api = twitterSession ?? (await defaultTwitterSession.appLogin());
-    const {data: account} = await api.v2.user(id, {
+    const {data: account} = await apiClient.v2.user(userId, {
         "user.fields": ["verified", "description", "pinned_tweet_id"]
     });
 
@@ -133,7 +114,7 @@ async function getTwitterTopAccount(
         account
     );
 
-    topAccountUsersCache.set(id, twitterTopAccount);
+    topAccountUsersCache.set(userId, twitterTopAccount);
     return twitterTopAccount;
 }
 
@@ -143,25 +124,21 @@ const topAccountsCache = new TimeoutCache<
 >("top-accounts", ONE_HOUR);
 
 async function getTwitterTopAccounts(
-    twSession?: string
-): Promise<TwitterTopAccount[]> {
-    const cacheItem = topAccountsCache.get(twSession);
+    apiClient: TwitterApi,
+    userId: string
+): Promise<TwitterTopAccount[] | undefined> {
+    const cacheItem = topAccountsCache.get(userId);
     if (cacheItem) return cacheItem;
 
-    const twitterSession = twSession
-        ? twitterSessions.get(twSession)
-        : undefined;
-
-    debug("Logging into the API");
-    const api = twitterSession ?? (await defaultTwitterSession.appLogin());
-
-    const checkUserId = await getUserIdToCheck(twitterSession);
-
-    debug("Checking the users that are following %s", checkUserId);
-    const following = await api.v2.following(checkUserId, {
+    debug("Checking the users that are following %s", userId);
+    const following = await apiClient.v2.following(userId, {
         max_results: 1000,
         "user.fields": ["verified", "description", "pinned_tweet_id"]
     });
+
+    if (!following.data) {
+        return undefined;
+    }
 
     debug(
         "Loading the account information for %s accounts",
@@ -172,7 +149,7 @@ async function getTwitterTopAccounts(
     );
     debug("Got twitter accounts with updated links");
 
-    topAccountsCache.set(twSession, twitterAccounts);
+    topAccountsCache.set(userId, twitterAccounts);
     return twitterAccounts;
 }
 
@@ -541,13 +518,21 @@ export default async function handleTopAccounts(
     res: Response
 ): Promise<void> {
     try {
-        const session = req.cookies["Twitter-Session"];
-        const apiClient =
-            twitterSessions.get(session) ??
-            (await defaultTwitterSession.appLogin());
+        const {id} = req.query;
+        if (typeof id !== "string") {
+            writeError(res, "user_id query param must be set");
+            return;
+        }
+
+        const apiClient = await getTwitterSession(req);
 
         debug("Loading the top Twitter accounts for the session");
-        const topTwitterAccounts = await getTwitterTopAccounts(session);
+        const topTwitterAccounts = await getTwitterTopAccounts(apiClient, id);
+
+        if (typeof topTwitterAccounts === "undefined") {
+            writeError(res, "twitter account does not exist", 404);
+            return;
+        }
 
         debug("Linking the Twitter accounts with their other information");
         const topAccounts = await getTopAccounts(apiClient, topTwitterAccounts);
@@ -570,17 +555,15 @@ export async function handleTopAccount(
     try {
         const {id} = req.params;
 
-        const session = req.cookies["Twitter-Session"];
-        const topTwitterAccount = await getTwitterTopAccount(id, session);
+        const apiClient = await getTwitterSession(req);
+
+        const topTwitterAccount = await getTwitterTopAccount(apiClient, id);
 
         if (!topTwitterAccount) {
             writeError(res, "Not found", 404);
             return;
         }
 
-        const apiClient =
-            twitterSessions.get(session) ??
-            (await defaultTwitterSession.appLogin());
         const [topAccount] = await getTopAccounts(apiClient, [
             topTwitterAccount
         ]);

@@ -1,6 +1,8 @@
 import {randomUUID} from "crypto";
 import {TimeoutCache} from "@cab432-a1/common";
 
+export const DEFAULT_SESSION_KEY = undefined;
+
 /**
  * A store with a per-item timeout
  */
@@ -8,7 +10,10 @@ export default class SessionStore<T> {
     private readonly store;
 
     constructor(timeout: number) {
-        this.store = new TimeoutCache<string, T>("session-store", timeout);
+        this.store = new TimeoutCache<string | undefined, T>(
+            "session-store",
+            timeout
+        );
     }
 
     dispose(): void {
@@ -27,21 +32,28 @@ export default class SessionStore<T> {
     }
 
     /**
+     * Sets the session under the `DEFAULT_SESSION_KEY` key.
+     */
+    setDefault(value: T): void {
+        this.store.set(DEFAULT_SESSION_KEY, value);
+    }
+
+    /**
      * Updates the stored value
-     * @param key The session key
+     * @param key The session key, or DEFAULT_SESSION_KEY
      * @param value The new value to save
      * @param restartTimeout Reset the timeout
      * @returns false if the key didn't exist, true if the value was changed
      */
-    update(key: string, value: T, restartTimeout = false): boolean {
+    update(key: string | undefined, value: T, restartTimeout = false): boolean {
         return this.store.update(key, value, restartTimeout);
     }
 
     /**
      * Gets the value of the stored key, or undefined if it doesnt exist
-     * @param key The session key
+     * @param key The session key, or DEFAULT_SESSION_KEY
      */
-    get(key: string): T | undefined {
+    get(key: string | undefined): T | undefined {
         return this.store.get(key);
     }
 }
