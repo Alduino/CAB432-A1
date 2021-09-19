@@ -180,6 +180,7 @@ export default class TimeoutCache<K, V> {
 
         if (timedOutKeys.size > 0) {
             this.debug("Cleared %s items", timedOutKeys.size);
+            this.invalidate();
         }
     }
 }
