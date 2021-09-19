@@ -112,9 +112,9 @@ export default function LoginPage(): ReactElement {
     const twitterLabel = twitterInitial?.isLoggedIn ? `@${twitterInitial.identifier}` : "Log in to Twitter";
 
     useEffect(() => {
-        if (!isTwitterLoggedIn) return;
+        if (!isTwitterLoggedIn || twitterInitialLoading) return;
         pushHistory("/home");
-    }, [isTwitterLoggedIn, pushHistory]);
+    }, [isTwitterLoggedIn, twitterInitialLoading, pushHistory]);
 
     return (
         <VStack spacing={4} p={4}>
