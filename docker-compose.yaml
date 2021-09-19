@@ -1,15 +1,11 @@
 version: "3.9"
 services:
   frontend:
-    image: cab432_a1/frontend:latest
-    build:
-      context: .
-      dockerfile: frontend.dockerfile
+    image: ghcr.io/alduino/cab432-a1/frontend:latest
+    environment:
+      PORT: 80
   backend:
-    image: cab432_a1/backend:latest
-    build:
-      context: .
-      dockerfile: backend.dockerfile
+    image: ghcr.io/alduino/cab432-a1/backend:latest
     environment:
       PORT: 80
       TWITTER_API_KEY: "0pTcRkH9yiaMXzruRRut8hy8L"
@@ -18,7 +14,7 @@ services:
       TWITCH_API_SECRET: "lhxx2q1gwueqzdtcd4dixndk7nywp3"
       TWITTER_BASE_USER: "309366491"
       YOUTUBE_API_KEY: "AIzaSyAoxTr8z1uE8BtIx4GYlzO02ViI-7tJAlk"
-      DEBUG: "app:*,api:*,common:*"
+      DEBUG: "app:*,api:*"
   proxy:
     image: nginx:alpine
     restart: on-failure
