@@ -12,7 +12,7 @@ export function run(): void {
 
     app.use(cors({
         origin: true,
-        allowedHeaders: "GET",
+        allowedHeaders: ["GET", "POST"],
         credentials: true
     }));
     app.use(helmet());
