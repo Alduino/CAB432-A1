@@ -25,12 +25,12 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/Alduino/cab432-a1/frontend:latest
+          tags: ghcr.io/alduino/cab432-a1/frontend:latest
           target: frontend
       - name: Make backend image
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: ghcr.io/Alduino/cab432-a1/frontend:latest
+          tags: ghcr.io/alduino/cab432-a1/frontend:latest
           target: frontend
