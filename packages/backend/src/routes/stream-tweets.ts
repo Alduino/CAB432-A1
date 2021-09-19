@@ -81,12 +81,12 @@ export default async function handleStreamTweets(
             tweets.map(tw => tw.author_id as string)
         );
 
-        const tweetAuthorList = await apiClient.v2.users(
+        const tweetAuthorList = tweetAuthorIds.size > 0 ? await apiClient.v2.users(
             Array.from(tweetAuthorIds),
             {
                 "user.fields": ["profile_image_url", "verified"]
             }
-        );
+        ) : {data: []};
 
         const tweetAuthors = new Map(
             tweetAuthorList.data.map(author => [author.id, author])
