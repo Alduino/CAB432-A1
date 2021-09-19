@@ -1,3 +1,4 @@
+import {ok as assert} from "assert";
 import {TimeoutCache} from "@cab432-a1/common";
 import debugBuilder from "debug";
 import {TweetV2, TwitterApi, UsersV2Params, UserV2} from "twitter-api-v2";
@@ -11,9 +12,9 @@ async function createTwitterTopAccount(
     pinnedTweet?: TweetV2
 ): Promise<TwitterTopAccount> {
     const accountLinks = [
-        ...account.entities?.url?.urls ?? [],
-        ...account.entities?.description?.urls ?? [],
-        ...pinnedTweet?.entities?.urls ?? []
+        ...(account.entities?.url?.urls ?? []),
+        ...(account.entities?.description?.urls ?? []),
+        ...(pinnedTweet?.entities?.urls ?? [])
     ].map(link => link.expanded_url);
 
     return {
@@ -33,15 +34,8 @@ export const topAccountUsersCache = new TimeoutCache<string, TwitterTopAccount>(
 );
 
 const userRequestOptions = {
-    "user.fields": [
-        "verified",
-        "description",
-        "entities"
-    ],
-    "tweet.fields": [
-        "author_id",
-        "entities"
-    ],
+    "user.fields": ["verified", "description", "entities"],
+    "tweet.fields": ["author_id", "entities"],
     expansions: "pinned_tweet_id"
 } as UsersV2Params;
 
@@ -57,7 +51,10 @@ export async function getTwitterTopAccount(
     if (cacheItem) return cacheItem;
 
     debug("Loading the account information for %s", userId);
-    const {data: account, includes} = await apiClient.v2.user(userId, userRequestOptions);
+    const {data: account, includes} = await apiClient.v2.user(
+        userId,
+        userRequestOptions
+    );
 
     if (!account) return undefined;
 
@@ -100,8 +97,19 @@ export async function getTwitterTopAccounts(
         "Loading the account information for %s accounts",
         following.data.length
     );
+
+    const pinnedTweetAuthorMap = new Map(
+        following.includes?.tweets?.map(tweet => {
+            assert(tweet.author_id, "tweet has no author id");
+            return [tweet.author_id, tweet];
+        }) ?? []
+    );
+
     const twitterAccounts = await Promise.all(
-        following.data.map(acc => createTwitterTopAccount(acc))
+        following.data.map(acc => {
+            const pinnedTweet = pinnedTweetAuthorMap.get(acc.id);
+            return createTwitterTopAccount(acc, pinnedTweet);
+        })
     );
     debug("Got twitter accounts with updated links");
 
