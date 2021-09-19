@@ -15,3 +15,5 @@ if (!twitchApiSecret) throw new Error("TWITCH_API_SECRET must be set");
 
 export const youtubeApiKey = process.env.YOUTUBE_API_KEY as string;
 if (!youtubeApiKey) throw new Error("YOUTUBE_API_KEY must be set");
+
+export const twitterApiDebug = process.env.TWITTER_API_DEBUG === "1";

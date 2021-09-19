@@ -152,7 +152,7 @@ export default class TimeoutCache<K, V> {
      * out may not be removed instantly.
      * @remarks This does not delete any existing cache data (unless overwritten)
      */
-    writeToStore(data: TimeoutStoreStructure<K, V>) {
+    writeToStore(data: TimeoutStoreStructure<K, V>): void {
         const entries = data as unknown as [K, TimeoutCacheItem<V>][];
 
         for (const [key, value] of entries) {

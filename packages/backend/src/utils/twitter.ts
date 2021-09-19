@@ -1,6 +1,6 @@
 import {createHmac} from "crypto";
-import {TwitterApi} from "twitter-api-v2";
-import {twitterConsumerKey, twitterConsumerSecret} from "../config";
+import {TwitterApi, TwitterApiV2Settings} from "twitter-api-v2";
+import {twitterApiDebug, twitterConsumerKey, twitterConsumerSecret} from "../config";
 import SessionStore from "./SessionStore";
 
 const percentEncodeDisabled = new Set(["-", ".", "_", "~"]);
@@ -58,6 +58,8 @@ export function generateSignature(
     hmac.update(baseStr);
     return hmac.digest("base64");
 }
+
+if (twitterApiDebug) TwitterApiV2Settings.debug = true;
 
 const ONE_HOUR = 1000 * 60 * 60;
 export const twitterSessions = new SessionStore<TwitterApi>(24 * ONE_HOUR);

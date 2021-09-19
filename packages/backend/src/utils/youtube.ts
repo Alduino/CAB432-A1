@@ -54,7 +54,6 @@ export async function getYoutubeVods(
             // without using up 100 quota points
 
             try {
-                debug("Getting 15 most recent videos for %s", userId);
                 const res = await fetch(
                     `https://www.youtube.com/feeds/videos.xml?channel_id=${userId}`
                 )
