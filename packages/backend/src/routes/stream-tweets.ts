@@ -34,14 +34,17 @@ export default async function handleStreamTweets(
             return;
         }
 
-        const [[, identifiers]] = await getAccountIdentifiers(apiClient, [
+        const identifierResult = await getAccountIdentifiers(apiClient, [
             twitterTopAccount
         ]);
+
+        const identifiers = identifierResult.get(twitterTopAccount);
+        assert(identifiers, "identifier result has no data");
 
         const streams = await twitchApi.getStreamsByLogins([
             identifiers.twitchLogin
         ]);
-        const thisStream = streams[identifiers.twitchLogin]?.[0];
+        const thisStream = streams.get(identifiers.twitchLogin)?.[0];
 
         if (!thisStream) {
             writeError(res, "Stream not found", 404);
@@ -55,7 +58,7 @@ export default async function handleStreamTweets(
                 "tweet.fields": ["author_id", "created_at"]
             });
 
-        const mentioningTweets = mostRecentMentioningTweetsResult.data.data;
+        const mentioningTweets = mostRecentMentioningTweetsResult.tweets;
 
         const mostRecentTweetsResult = await apiClient.v2.userTimeline(
             thisUser.id,
@@ -66,7 +69,7 @@ export default async function handleStreamTweets(
             }
         );
 
-        const selfTweets = mostRecentTweetsResult.data.data;
+        const selfTweets = mostRecentTweetsResult.tweets;
 
         const tweets = [...mentioningTweets, ...selfTweets].sort(
             (a, b) =>

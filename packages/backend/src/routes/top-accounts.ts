@@ -50,7 +50,7 @@ async function getTopAccounts(
                 twitterVerified: user.verified,
                 twitchId: twitchAccount.id,
                 twitchLogin: twitchAccount.login,
-                twitchStreamId: streams[twitchLogin]?.[0]?.id,
+                twitchStreamId: streams.get(twitchLogin)?.[0]?.id,
                 profilePictureUrl: twitchAccount.profileImageUrl,
                 notLiveCoverUrl: twitchAccount.offlineImageUrl,
                 displayName: twitchAccount.displayName,

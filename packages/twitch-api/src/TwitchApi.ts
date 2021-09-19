@@ -138,7 +138,7 @@ Request: ${path}`;
     async getStreamsByLogins(
         logins: string[],
         count = 0
-    ): Promise<Record<string, TwitchStream[]>> {
+    ): Promise<ReadonlyMap<string, TwitchStream[]>> {
         const streams = await this.getStreams("user_login", logins, count);
 
         const result = new Map<string, TwitchStream[]>();
@@ -151,7 +151,7 @@ Request: ${path}`;
             list.push(new TwitchStream(this, stream));
         }
 
-        return Object.fromEntries(result.entries());
+        return result;
     }
 
     /**
