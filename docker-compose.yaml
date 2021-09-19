@@ -1,8 +1,28 @@
 version: "3.9"
 services:
   frontend:
+    image: cab432_a1/frontend:latest
     build:
       context: .
       dockerfile: frontend.dockerfile
+  backend:
+    image: cab432_a1/backend:latest
+    build:
+      context: .
+      dockerfile: backend.dockerfile
+    environment:
+      PORT: 80
+      TWITTER_API_KEY: "0pTcRkH9yiaMXzruRRut8hy8L"
+      TWITTER_API_SECRET: "iEkDY1UKUnwY7BsoLJc4g9p8EvT4QGD3rbShruqhrj3kwby8UO"
+      TWITCH_API_KEY: "107p0bzfy3j7xdbotd6vht05g06wpw"
+      TWITCH_API_SECRET: "lhxx2q1gwueqzdtcd4dixndk7nywp3"
+      TWITTER_BASE_USER: "309366491"
+      YOUTUBE_API_KEY: "AIzaSyAoxTr8z1uE8BtIx4GYlzO02ViI-7tJAlk"
+      DEBUG: "app:*,api:*,common:*"
+  proxy:
+    image: nginx:alpine
+    restart: on-failure
+    volumes:
+      - ./prod-nginx.conf:/etc/nginx/nginx.conf
     ports:
-      - 8084:80
+      - "${PORT}:80"

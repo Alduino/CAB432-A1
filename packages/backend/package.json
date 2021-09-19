@@ -2,8 +2,12 @@
   "name": "@cab432-a1/backend",
   "version": "0.1.0",
   "private": true,
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "typings": "dist/index.d.ts",
   "scripts": {
-    "dev": "ts-node src/index.ts"
+    "dev": "ts-node src/index.ts",
+    "build": "pkg-lib build"
   },
   "dependencies": {
     "@cab432-a1/common": "workspace:^0.1.0",
@@ -20,6 +24,7 @@
     "url-join": "^4.0.1"
   },
   "devDependencies": {
+    "@alduino/pkg-lib": "^0.5.1",
     "@types/cookie-parser": "^1.4.2",
     "@types/debug": "^4.1.7",
     "@types/express": "^4.17.13",

@@ -9,9 +9,12 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "outDir": "out",
+    "isolatedModules": true
   },
   "include": [
     "src"
-  ]
+  ],
+  "exclude": ["**/node_modules", "**/.*/"]
 }

@@ -1,4 +1,4 @@
-FROM node:lts as build
+FROM node:lts as dependencies
 RUN curl -f https://get.pnpm.io/v6.14.js | node - add --global pnpm
 
 WORKDIR /app
@@ -8,6 +8,8 @@ RUN pnpm fetch
 
 ADD . ./
 RUN pnpm install -r --offline
+
+FROM dependencies as build
 RUN pnpm recursive --filter "@cab432-a1/frontend" run build
 
 FROM nginx:stable-alpine
