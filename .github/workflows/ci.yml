@@ -5,14 +5,9 @@ on:
     branches:
       - master
 
-env:
-  REGISTRY: ghcr.io
-
 jobs:
-  frontend:
+  build-images:
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: "Alduino/cab432-a1/frontend"
     permissions:
       contents: read
       packages: write
@@ -25,33 +20,17 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image
+      - name: Make frontend image
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          file: frontend.dockerfile
-          tags: latest
-  backend:
-    runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: "Alduino/cab432-a1/backend"
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Log in to container registry
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image
+          tags: ghcr.io/Alduino/cab432-a1/frontend:latest
+          target: frontend
+      - name: Make backend image
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          file: backend.dockerfile
-          tags: latest
+          tags: ghcr.io/Alduino/cab432-a1/frontend:latest
+          target: frontend

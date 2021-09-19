@@ -10,9 +10,16 @@ RUN pnpm fetch
 COPY . ./
 RUN pnpm install -r --offline
 
-FROM dependencies
+FROM dependencies as backend
 WORKDIR /app
 
-RUN pnpm recursive --filter "@cab432-a1/backend" run build
+RUN pnpm recursive run build
 
 ENTRYPOINT ["node", "packages/backend/bin.js"]
+
+FROM nginx:stable-alpine as frontend
+
+COPY frontend-nginx.conf /etc/nginx/nginx.conf
+COPY --from=build /app/packages/frontend/build /srv
+
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
