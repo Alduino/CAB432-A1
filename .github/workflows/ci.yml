@@ -32,5 +32,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/alduino/cab432-a1/frontend:latest
+          tags: ghcr.io/alduino/cab432-a1/backend:latest
           target: frontend
