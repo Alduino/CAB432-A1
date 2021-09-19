@@ -47,16 +47,33 @@ interface StreamTweetProps {
 }
 
 function StreamTweetDisplay({streamTweet}: StreamTweetProps): ReactElement {
+    const displayEqualsUser =
+        streamTweet.authorDisplayName.toLowerCase() ===
+        streamTweet.authorUsername.toLowerCase();
+
     return (
         <Stack spacing={0}>
             <HStack spacing={1} color="blackAlpha.600">
-                <Text fontWeight="bold" color="gray.900">{streamTweet.authorDisplayName}</Text>
-                {streamTweet.authorIsVerified && <VerifiedBadge />}
-                <Text>
-                    @{streamTweet.authorUsername}
-                </Text>
+                {displayEqualsUser ? (
+                    <>
+                        <Text fontWeight="bold" color="gray.900">
+                            @{streamTweet.authorDisplayName}
+                        </Text>
+                        {streamTweet.authorIsVerified && <VerifiedBadge />}
+                    </>
+                ) : (
+                    <>
+                        <Text fontWeight="bold" color="gray.900">
+                            {streamTweet.authorDisplayName}
+                        </Text>
+                        {streamTweet.authorIsVerified && <VerifiedBadge />}
+                        <Text>@{streamTweet.authorUsername}</Text>
+                    </>
+                )}
                 <Text>·</Text>
-                <Text><ReactTimeago date={streamTweet.publishTime} /></Text>
+                <Text>
+                    <ReactTimeago date={streamTweet.publishTime} />
+                </Text>
             </HStack>
             <Text fontSize="sm">{streamTweet.source}</Text>
         </Stack>
