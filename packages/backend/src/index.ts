@@ -5,7 +5,7 @@ import handleGetDefaultRoot from "./routes/default-root";
 import handleStreamTweets from "./routes/stream-tweets";
 import handleTopAccounts, {handleTopAccount} from "./routes/top-accounts";
 
-export function run() {
+export function run(): void {
     const app = express();
     app.use(cookieParser());
 

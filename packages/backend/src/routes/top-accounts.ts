@@ -19,7 +19,7 @@ async function getTopAccounts(
     apiClient: TwitterApi,
     twitterTopAccounts: TwitterTopAccount[]
 ): Promise<TopAccount[]> {
-    const users = await getAccountIdentifiers(apiClient, twitterTopAccounts);
+    const users = await getAccountIdentifiers(twitterTopAccounts);
 
     const userIdentifiers = Array.from(users.values());
     const twitchLogins = userIdentifiers.map(user => user.twitchLogin);
@@ -122,7 +122,7 @@ export async function handleTopAccount(
         const topTwitterAccount = await getTwitterTopAccount(apiClient, id);
 
         if (!topTwitterAccount) {
-            writeError(res, "Not found", 404);
+            writeError(res, "Unknown Twitter account", 404);
             return;
         }
 
@@ -131,7 +131,7 @@ export async function handleTopAccount(
         ]);
 
         if (!topAccount) {
-            writeError(res, "Not found", 404);
+            writeError(res, "No Twitch link found", 404);
             return;
         }
 

@@ -3,6 +3,7 @@ export interface TwitterTopAccount {
     name: string;
     username: string;
     description: string;
+    accountLinks: string[];
     verified: boolean;
     pinnedTweetId?: string;
 }

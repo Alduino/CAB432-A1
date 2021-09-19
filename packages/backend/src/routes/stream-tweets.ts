@@ -34,7 +34,7 @@ export default async function handleStreamTweets(
             return;
         }
 
-        const identifierResult = await getAccountIdentifiers(apiClient, [
+        const identifierResult = await getAccountIdentifiers([
             twitterTopAccount
         ]);
 
