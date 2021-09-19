@@ -3,11 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "typings": "dist/index.d.ts",
   "scripts": {
     "dev": "ts-node bin.ts",
-    "build": "pkg-lib build"
+    "build": "tsc"
   },
   "dependencies": {
     "@cab432-a1/common": "workspace:^0.1.0",

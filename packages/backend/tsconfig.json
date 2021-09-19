@@ -10,7 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "downlevelIteration": true,
-    "outDir": "out",
+    "outDir": "dist",
     "isolatedModules": true
   },
   "include": [
