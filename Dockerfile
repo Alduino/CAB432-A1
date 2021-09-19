@@ -1,7 +1,6 @@
-FROM node:lts as pnpm-install
+FROM node:lts as dependencies
 RUN curl -f https://get.pnpm.io/v6.14.js | node - add --global pnpm
 
-FROM pnpm-install as dependencies
 WORKDIR /app
 
 COPY pnpm-lock.yaml ./
@@ -20,6 +19,6 @@ ENTRYPOINT ["node", "packages/backend/bin.js"]
 FROM nginx:stable-alpine as frontend
 
 COPY frontend-nginx.conf /etc/nginx/nginx.conf
-COPY --from=build /app/packages/frontend/build /srv
+COPY --from=dependencies /app/packages/frontend/build /srv
 
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
