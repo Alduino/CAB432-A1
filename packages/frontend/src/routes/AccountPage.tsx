@@ -94,12 +94,18 @@ function StreamTweets({account}: ViewProps): ReactElement {
                     alignItems="stretch"
                     divider={<StackDivider w="50%" alignSelf="center" />}
                 >
-                    {streamTweets.data.map(streamTweet => (
-                        <StreamTweetDisplay
-                            key={streamTweet.tweetId}
-                            streamTweet={streamTweet}
-                        />
-                    ))}
+                    {streamTweets.data.length > 0 ? (
+                        streamTweets.data.map(streamTweet => (
+                            <StreamTweetDisplay
+                                key={streamTweet.tweetId}
+                                streamTweet={streamTweet}
+                            />
+                        ))
+                    ) : (
+                        <Text size="sm" color="blackAlpha.500">
+                            There are no tweets related to the stream.
+                        </Text>
+                    )}
                 </Stack>
                 {error && (
                     <Tooltip label="New data couldn't be loaded">
