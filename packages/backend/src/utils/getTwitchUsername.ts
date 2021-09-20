@@ -5,6 +5,7 @@ export function getTwitchUsername(
     source: string,
     isFullLink = false
 ): string | undefined {
+    if (!source) return;
     const match = source.match(
         isFullLink ? fullTwitchLinkRegex : twitchLinkRegex
     );

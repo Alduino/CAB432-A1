@@ -32,6 +32,7 @@ import {useParams} from "react-router-dom";
 import ReactTimeago from "react-timeago";
 import useSWR from "swr";
 import {AccountName} from "../components/AccountName";
+import {FollowingDisplay} from "../components/FollowingDisplay";
 import {LiveIcon} from "../components/LiveIcon";
 import {VerifiedBadge} from "../components/VerifiedBadge";
 import fetchJson from "../utils/fetchJson";
@@ -161,24 +162,26 @@ function LiveView({account}: ViewProps): ReactElement {
             <AspectRatio ratio={16 / 9} borderRadius="md" overflow="hidden">
                 <IFrame allowFullScreen src={src} />
             </AspectRatio>
-            {account.youtube ? (
-                <Tabs>
-                    <TabList>
-                        <Tab>Stream Tweets</Tab>
-                        <Tab>Last VOD</Tab>
-                    </TabList>
-                    <TabPanels>
-                        <TabPanel>
-                            <StreamTweets account={account} />
-                        </TabPanel>
+            <Tabs isLazy={true}>
+                <TabList>
+                    <Tab>Stream Tweets</Tab>
+                    <Tab>Related</Tab>
+                    {account.youtube && <Tab>Last VOD</Tab>}
+                </TabList>
+                <TabPanels>
+                    <TabPanel>
+                        <StreamTweets account={account} />
+                    </TabPanel>
+                    <TabPanel>
+                        <FollowingDisplay userId={account.id} />
+                    </TabPanel>
+                    {account.youtube && (
                         <TabPanel>
                             <LastVod youtube={account.youtube} />
                         </TabPanel>
-                    </TabPanels>
-                </Tabs>
-            ) : (
-                <StreamTweets account={account} />
-            )}
+                    )}
+                </TabPanels>
+            </Tabs>
         </Stack>
     );
 }
@@ -187,7 +190,7 @@ function OfflineView({account}: ViewProps): ReactElement {
     // we need to split the image div into two, as Chakra's `Stack` disables any
     // margin we set on direct children
     return (
-        <Box px={4}>
+        <Stack px={4} spacing={4}>
             {account.youtube ? (
                 <Stack>
                     <Text>
@@ -223,7 +226,10 @@ function OfflineView({account}: ViewProps): ReactElement {
                     </Box>
                 </Box>
             )}
-        </Box>
+            <Box flexGrow={1}>
+                <FollowingDisplay userId={account.id} />
+            </Box>
+        </Stack>
     );
 }
 
