@@ -97,7 +97,7 @@ export function FollowingDisplay({
         );
     } else if (data.data.length === 0) {
         return (
-            <Text>
+            <Text p={4}>
                 We couldn&lsquo;t find any users with a Twitch account being
                 followed by this user.
             </Text>
