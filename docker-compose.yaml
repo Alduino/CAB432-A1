@@ -8,12 +8,12 @@ services:
     image: ghcr.io/alduino/cab432-a1/backend:latest
     environment:
       PORT: 80
-      TWITTER_API_KEY: "0pTcRkH9yiaMXzruRRut8hy8L"
-      TWITTER_API_SECRET: "iEkDY1UKUnwY7BsoLJc4g9p8EvT4QGD3rbShruqhrj3kwby8UO"
-      TWITCH_API_KEY: "107p0bzfy3j7xdbotd6vht05g06wpw"
-      TWITCH_API_SECRET: "lhxx2q1gwueqzdtcd4dixndk7nywp3"
+      TWITTER_API_KEY: "XXXX"
+      TWITTER_API_SECRET: "XXXX"
+      TWITCH_API_KEY: "XXXX"
+      TWITCH_API_SECRET: "XXXX"
       TWITTER_BASE_USER: "309366491"
-      YOUTUBE_API_KEY: "AIzaSyAoxTr8z1uE8BtIx4GYlzO02ViI-7tJAlk"
+      YOUTUBE_API_KEY: "XXXX"
       DEBUG: "app:*,api:*"
   proxy:
     image: nginx:alpine
